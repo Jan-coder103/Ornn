@@ -1,0 +1,28 @@
+export const ENEMY_TEMPLATES = {
+    slime: {
+        hp: 2,
+        damage: 1,
+        knockbackResistance: 0.3,
+        speed: 0.4,
+        chaseSpeed: 0.8,
+        aggroRange: 80,
+        attackRange: 20,
+        attackCooldown: 45,
+        w: 10,
+        h: 10,
+        color: '#4caf50',
+    },
+    skeleton: {
+        hp: 4,
+        damage: 2,
+        knockbackResistance: 0.6,
+        speed: 0.5,
+        chaseSpeed: 1.0,
+        aggroRange: 100,
+        attackRange: 20,
+        attackCooldown: 40,
+        w: 10,
+        h: 14,
+        color: '#bdbdbd',
+    },
+};
