@@ -354,7 +354,7 @@
 
 *Hub, overworld generation, dungeon layout, and death handling.*
 
-**I.1 Hub Implementation**
+✅ **I.1 Hub Implementation**
 
 * Peaceful flat map, no enemies, no gravity hazards.
 * Place NPC positions for: shop, crystal forge, teleport pad.
@@ -362,7 +362,7 @@
 * Disable combat inputs in hub.
 * **Validation:** Hub loads peacefully, interactions open correct menus, no combat triggers.
 
-**I.2 Overworld Generation**
+✅ **I.2 Overworld Generation**
 
 * On entering from hub: load base overworld tilemap.
 * Randomly place 5-8 dungeon entrance sprites using Poisson disc sampling (minimum 120px apart).
@@ -371,13 +371,13 @@
 * On re-entry from hub: regenerate positions, clear old entities.
 * **Validation:** Dungeons spawn randomly but fairly, positions don't overlap, spacing is readable.
 
-**I.3 Dungeon Entrances**
+✅ **I.3 Dungeon Entrances**
 
 * Interactable with E key. Store `dungeonID` (1 of 3 handcrafted dungeons).
 * After clear: draw red X overlay above entrance, disable interaction.
 * **Validation:** Entrance triggers scene change, red X persists, cleared dungeons can't re-enter.
 
-**I.4 Mini Dungeon Layout**
+✅ **I.4 Mini Dungeon Layout**
 
 * Create 3 handcrafted maps (separate JSON files):
   * **Room 1**: 6-8 normal enemies.
@@ -387,13 +387,13 @@
 * All rooms in one JSON per dungeon type.
 * **Validation:** All 3 dungeons play through correctly, room transitions work, enemy counts match.
 
-**I.5 Portal Return**
+✅ **I.5 Portal Return**
 
 * After boss defeated: spawn portal entity in boss arena.
 * Interaction (E key) returns player to overworld at same dungeon entrance location.
 * **Validation:** Portal spawns, interaction works, player returns to correct overworld position.
 
-**I.6 Death Handling**
+✅ **I.6 Death Handling**
 
 * On player HP ≤ 0 anywhere:
   * `coinsBank = Math.floor(coinsBank * 0.95)` (5% coin loss).
@@ -409,32 +409,32 @@
 
 *Data structures, equipment, socketing, and loot.*
 
-**J.1 Inventory Data**
+✅ **J.1 Inventory Data**
 
 * Array of 24 slots, each `{itemId, quantity}`.
 * Stackable for crystals and consumables. Gear is unique (quantity 1).
 * **Validation:** Items store correctly, stacking works, 24-slot limit enforced.
 
-**J.2 Equipment Slots**
+✅ **J.2 Equipment Slots**
 
 * `equipped = {helmet: null, chest: null, shoes: null, ring1: null, ring2: null, tome: null, mount: null}`.
 * Mount only active in overworld (auto-dismount entering dungeon).
 * **Validation:** Slot limits enforced, no duplicate gear equipped.
 
-**J.3 Item Definitions**
+✅ **J.3 Item Definitions**
 
 * `items.json` defines each gear piece with base stats: `hpBonus`, `damageBonus`, `speedBonus`, `crystalSlots` (armor always 1).
 * Include rarity tiers, sell values, realm restrictions.
 * **Validation:** All items have complete stat data, load correctly from JSON.
 
-**J.4 Equip Logic**
+✅ **J.4 Equip Logic**
 
 * On equip: unequip previous item back to inventory, place new item in slot.
 * Recalculate `totalStats = base + sum(allGear.stats) + crystalBonuses`.
 * Update player `maxHp`, `speed`, `damage` immediately.
 * **Validation:** Stats update instantly on equip/unequip, previous item returns to inventory.
 
-**J.5 Crystal System**
+✅ **J.5 Crystal System**
 
 * Crystals are inventory items with stat mods: `Red (+dmg)`, `Blue (+hp)`, `Green (+speed)`.
 * Socketing: if armor crystal slot occupied → destroy old crystal → insert new.
@@ -442,7 +442,7 @@
 * Add confirmation popup to prevent accidental destruction.
 * **Validation:** Replacement destroys old crystal, new stats apply, popup prevents accidents.
 
-**J.6 Loot Drops**
+✅ **J.6 Loot Drops**
 
 * Boss drops 2-4 items: roll rarity table, pick from pool for current realm.
 * Spawn as physical pickup entities on ground with bounce animation and glow.
@@ -455,20 +455,20 @@
 
 *Shops, currency, forging, and realm unlocks.*
 
-**K.1 Coin Bank**
+✅ **K.1 Coin Bank**
 
 * All coins go directly to `coinsBank` on pickup. No coin item in inventory.
 * Displayed in HUD and all shop interfaces.
 * **Validation:** Coins accumulate correctly, no floating coin items.
 
-**K.2 Shop UI**
+✅ **K.2 Shop UI**
 
 * Buy list shows items with price. Buy deducts from `coinsBank`.
 * Sell gives 40% of item value back to `coinsBank`.
 * Update bank instantly on transaction.
 * **Validation:** Currency updates correctly, can't buy with insufficient funds, sell price is 40%.
 
-**K.3 Crystal Forge**
+✅ **K.3 Crystal Forge**
 
 * Two actions:
   * **Scrap crystal**: convert to crystal dust.
@@ -476,13 +476,13 @@
 * Simple UI with drag slots and confirm button.
 * **Validation:** Scrap/upgrade logic prevents negative values, crystal quantities update.
 
-**K.4 Mount Shop**
+✅ **K.4 Mount Shop**
 
 * Mounts give overworld speed multiplier: `1.3x - 1.6x` depending on mount.
 * Buy and equip instantly, save to inventory mount slot.
 * **Validation:** Mounts save, speed multiplier applies only in overworld.
 
-**K.5 Realm Progression**
+✅ **K.5 Realm Progression**
 
 * Teleport pad in hub: Realm 1 always available.
 * Realm 2 unlocks at player level 5.
@@ -490,7 +490,7 @@
 * Higher realms use same overworld base tilemap but stronger enemy stats and better loot tables.
 * **Validation:** Teleport options unlock at correct levels, higher realms are harder with better rewards.
 
-**K.6 XP System**
+✅ **K.6 XP System**
 
 * Normal enemy: 5 XP. Boss: 50 XP.
 * Level curve: `xpNeeded = 100 * level`.
