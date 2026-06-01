@@ -5,6 +5,7 @@ import { STATES } from '../GameStateManager.js';
 import { playerData } from '../GameData.js';
 import { wasKeyPressed } from '../Input.js';
 import { calculateStats } from '../Inventory.js';
+import { REALM_MULT } from '../CONFIG.js';
 
 const DUNGEON_MAPS = {
     1: [
@@ -47,12 +48,17 @@ function loadCurrentRoom() {
     }
     if (scene) scene.destroy();
     calculateStats();
+
+    const realm = playerData.currentRealm || 1;
+    const realmMult = REALM_MULT[realm] || 1.0;
+
     const rooms = getRooms();
     const room = rooms[currentRoom];
     scene = new Scene({
         mapPath: room.mapPath,
         type: 'dungeon',
         roomType: room.type,
+        realmMult,
         onRoomCleared: advanceRoom,
         bossPortalTarget: 'OVERWORLD',
         onBossDefeated: () => {

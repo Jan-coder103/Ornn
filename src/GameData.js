@@ -21,6 +21,8 @@ export const playerData = {
         mountSpeedMult: 1.0,
     },
 
+    currentRealm: 1,
+    crystalDust: 0,
     fromDungeon: false,
     pendingDungeonID: 1,
     pendingDungeonEntranceIndex: -1,
@@ -29,6 +31,8 @@ export const playerData = {
     deathMessageTimer: 0,
     inventoryMessage: '',
     inventoryMessageTimer: 0,
+    hubMessage: '',
+    hubMessageTimer: 0,
 };
 
 export function resetPlayerData() {
@@ -53,6 +57,8 @@ export function resetPlayerData() {
         speedBonus: 0,
         mountSpeedMult: 1.0,
     };
+    playerData.currentRealm = 1;
+    playerData.crystalDust = 0;
     playerData.fromDungeon = false;
     playerData.pendingDungeonID = 1;
     playerData.pendingDungeonEntranceIndex = -1;

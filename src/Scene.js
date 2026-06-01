@@ -9,9 +9,11 @@ import { Enemy } from './entities/Enemy.js';
 import { Boss } from './entities/Boss.js';
 import { ParticleSystem } from './entities/Particles.js';
 import { LootDrop } from './entities/LootDrop.js';
+import { CoinDrop } from './entities/CoinDrop.js';
 import { Portal } from './Portal.js';
 import { Door } from './Door.js';
 import { DungeonEntrance } from './DungeonEntrance.js';
+import { NPC } from './NPC.js';
 import { ENEMY_TEMPLATES } from './EnemyTemplates.js';
 import { transitionTo, isInputBlocked } from './Transition.js';
 import { STATES } from './GameStateManager.js';
@@ -21,11 +23,20 @@ import {
     setItemsDB, addItem, rollLoot, calculateStats, initInventory,
     socketCrystal, getEquippedItem
 } from './Inventory.js';
+import { addXP, getXPProgress } from './XPSystem.js';
+import {
+    ENEMY_XP, BOSS_XP, ENEMY_COIN_MIN, ENEMY_COIN_MAX,
+    BOSS_COIN_MIN, BOSS_COIN_MAX, REALM_MULT
+} from './CONFIG.js';
 
 const GROUND_COLORS = {
     1: '#87CEEB',
     2: '#5b8731',
     3: '#8b6914',
+    4: '#2e7d32',
+    5: '#e65100',
+    6: '#5d4037',
+    7: '#7b1fa2',
 };
 
 function aabbOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
@@ -51,6 +62,8 @@ export class Scene {
         this.portals = [];
         this.dungeonEntrances = [];
         this.lootDrops = [];
+        this.coinDrops = [];
+        this.npcs = [];
         this.mapPixelW = 0;
         this.mapPixelH = 0;
         this._debugInfo = { playerX: null, playerY: null, entityCount: 0 };
@@ -83,6 +96,8 @@ export class Scene {
         this.portals = [];
         this.dungeonEntrances = [];
         this.lootDrops = [];
+        this.coinDrops = [];
+        this.npcs = [];
         this.particles = null;
     }
 
@@ -122,6 +137,8 @@ export class Scene {
         this.door = null;
         this.enemiesKilled = 0;
         this.lootDrops = [];
+        this.coinDrops = [];
+        this.npcs = [];
 
         for (const e of entities) {
             if (e.type === 'portal') {
@@ -129,10 +146,23 @@ export class Scene {
             } else if (e.type === 'enemy' || e.type === 'enemy_spawn') {
                 const template = ENEMY_TEMPLATES[e.enemyType || 'slime'];
                 if (template) {
-                    this.enemies.push(new Enemy(e.x * TILE, e.y * TILE, template));
+                    const realmMult = this.config.realmMult || 1.0;
+                    const scaled = {
+                        ...template,
+                        hp: Math.ceil(template.hp * realmMult),
+                        damage: Math.ceil(template.damage * realmMult),
+                    };
+                    this.enemies.push(new Enemy(e.x * TILE, e.y * TILE, scaled));
                 }
             } else if (e.type === 'boss') {
-                this.boss = new Boss(e.x * TILE, e.y * TILE);
+                const realmMult = this.config.realmMult || 1.0;
+                const boss = new Boss(e.x * TILE, e.y * TILE);
+                boss.hp = Math.ceil(boss.hp * realmMult);
+                boss.maxHp = boss.hp;
+                boss.damage = Math.ceil(boss.damage * realmMult);
+                this.boss = boss;
+            } else if (e.type === 'npc') {
+                this.npcs.push(new NPC(e.x, e.y, e.npcType));
             }
         }
 
@@ -168,6 +198,8 @@ export class Scene {
             this._handleDoor();
             this._handleDungeonEntrances();
             this._handleLootPickup();
+            this._handleCoinPickup();
+            this._handleNPCs();
         }
 
         this.physics.update(this.player.body);
@@ -222,6 +254,12 @@ export class Scene {
         }
         for (const loot of this.lootDrops) {
             loot.update(dt);
+        }
+        for (const coin of this.coinDrops) {
+            coin.update(dt);
+        }
+        for (const npc of this.npcs) {
+            npc.update(dt);
         }
 
         this._updateDebugInfo();
@@ -314,6 +352,37 @@ export class Scene {
         }
     }
 
+    _handleCoinPickup() {
+        for (let i = this.coinDrops.length - 1; i >= 0; i--) {
+            const coin = this.coinDrops[i];
+            if (!coin.active) continue;
+
+            if (coin.isPlayerNear(this.player.body)) {
+                playerData.coinsBank += coin.amount;
+                coin.active = false;
+                this.coinDrops.splice(i, 1);
+
+                this.particles.emit(coin.x + coin.w / 2, coin.y + coin.h / 2, 4, {
+                    speedMin: 0.3, speedMax: 0.8,
+                    lifeMin: 6, lifeMax: 12,
+                    size: 2,
+                    colors: ['#ffc107', '#fff'],
+                });
+            }
+        }
+    }
+
+    _handleNPCs() {
+        for (const npc of this.npcs) {
+            if (npc.isPlayerNear(this.player.body) && Input.interactPressed()) {
+                if (this.config.onNPCInteract) {
+                    this.config.onNPCInteract(npc.npcType);
+                }
+                return;
+            }
+        }
+    }
+
     _updateBoomerang() {
         if (!this.boomerang) return;
 
@@ -354,6 +423,16 @@ export class Scene {
 
                 if (killed) {
                     this.enemiesKilled++;
+
+                    const coinAmount = ENEMY_COIN_MIN + Math.floor(Math.random() * (ENEMY_COIN_MAX - ENEMY_COIN_MIN + 1));
+                    this.coinDrops.push(new CoinDrop(
+                        enemy.body.centerX - 2,
+                        enemy.body.pos.y - 4,
+                        coinAmount
+                    ));
+
+                    addXP(ENEMY_XP);
+
                     this.particles.emit(enemy.body.centerX, enemy.body.centerY, 8, {
                         speedMin: 0.3, speedMax: 1.0,
                         lifeMin: 10, lifeMax: 20,
@@ -377,6 +456,15 @@ export class Scene {
                 });
 
                 if (killed) {
+                    const coinAmount = BOSS_COIN_MIN + Math.floor(Math.random() * (BOSS_COIN_MAX - BOSS_COIN_MIN + 1));
+                    this.coinDrops.push(new CoinDrop(
+                        this.boss.body.centerX - 2,
+                        this.boss.body.pos.y - 4,
+                        coinAmount
+                    ));
+
+                    addXP(BOSS_XP);
+
                     this.particles.emit(this.boss.body.centerX, this.boss.body.centerY, 12, {
                         speedMin: 0.5, speedMax: 2.0,
                         lifeMin: 15, lifeMax: 30,
@@ -470,7 +558,7 @@ export class Scene {
         const portalTarget = this.config.bossPortalTarget || 'HUB';
         this.portals.push(new Portal(tileX + 2, tileY, portalTarget));
 
-        const realm = playerData.realmUnlocked || 1;
+        const realm = playerData.currentRealm || playerData.realmUnlocked || 1;
         const droppedItems = rollLoot(realm);
         for (let i = 0; i < droppedItems.length; i++) {
             const offsetX = (i - (droppedItems.length - 1) / 2) * 14;
@@ -554,6 +642,10 @@ export class Scene {
             entrance.render(c, cx, cy);
         }
 
+        for (const npc of this.npcs) {
+            npc.render(c, cx, cy);
+        }
+
         for (const portal of this.portals) {
             portal.render(c, cx, cy);
         }
@@ -564,6 +656,9 @@ export class Scene {
 
         for (const loot of this.lootDrops) {
             loot.render(c, cx, cy);
+        }
+        for (const coin of this.coinDrops) {
+            coin.render(c, cx, cy);
         }
 
         for (const enemy of this.enemies) {
@@ -656,6 +751,11 @@ export class Scene {
                 loot.renderPrompt(c, cameraX, cameraY);
             }
         }
+        for (const npc of this.npcs) {
+            if (npc.isPlayerNear(this.player.body)) {
+                npc.renderPrompt(c, cameraX, cameraY);
+            }
+        }
     }
 
     _renderHUD(c) {
@@ -690,6 +790,23 @@ export class Scene {
         c.textAlign = 'right';
         c.fillStyle = '#ffc107';
         c.fillText('$' + playerData.coinsBank, INTERNAL_W - 4, 10);
+        c.restore();
+
+        c.save();
+        c.font = '4px monospace';
+        c.textAlign = 'left';
+        c.fillStyle = '#aaa';
+        c.fillText('Lv.' + playerData.level, 4, INTERNAL_H - 12);
+
+        const xp = getXPProgress();
+        const barX = 4;
+        const barY = INTERNAL_H - 8;
+        const barW = 40;
+        const barH = 3;
+        c.fillStyle = '#333';
+        c.fillRect(barX, barY, barW, barH);
+        c.fillStyle = '#2196f3';
+        c.fillRect(barX, barY, Math.floor(barW * xp.fraction), barH);
         c.restore();
     }
 }

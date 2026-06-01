@@ -4,11 +4,13 @@ import { transitionTo } from '../Transition.js';
 import { STATES } from '../GameStateManager.js';
 import { playerData } from '../GameData.js';
 import { calculateStats } from '../Inventory.js';
+import { REALM_MULT } from '../CONFIG.js';
 
 let scene = null;
 let dungeonEntrances = [];
 
 function generateEntrances(mapWidth) {
+    const realm = playerData.currentRealm || 1;
     const count = 5 + Math.floor(Math.random() * 4);
     const minSpacing = 7;
     const validStart = 5;
@@ -28,8 +30,7 @@ function generateEntrances(mapWidth) {
             }
             if (Math.abs(x - 2) < 4) tooClose = true;
             if (!tooClose) {
-                const dungeonID = 1 + Math.floor(Math.random() * 3);
-                positions.push({ x, y: 5, dungeonID, cleared: false });
+                positions.push({ x, y: 5, dungeonID: realm, cleared: false });
                 placed = true;
                 break;
             }
@@ -56,9 +57,13 @@ export default {
             dungeonEntrances = generateEntrances(50);
         }
 
+        const realm = playerData.currentRealm || 1;
+        const realmMult = REALM_MULT[realm] || 1.0;
+
         scene = new Scene({
             mapPath: 'data/maps/overworld.json',
             type: 'overworld',
+            realmMult,
             dungeonEntrances: dungeonEntrances,
             onDungeonEnter: (entrance) => {
                 if (scene && scene.player) {

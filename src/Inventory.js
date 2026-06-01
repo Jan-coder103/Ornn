@@ -313,6 +313,90 @@ export function getSellValue(itemId) {
     return Math.floor(def.sellValue * 0.4);
 }
 
+export function getBuyPrice(itemId) {
+    const def = itemsDB ? itemsDB[itemId] : null;
+    if (!def) return 0;
+    return def.sellValue;
+}
+
+export function getShopItems(maxRealm) {
+    if (!itemsDB) return [];
+    return Object.values(itemsDB).filter(item => {
+        if (item.type === 'crystal' || item.type === 'tool' || item.type === 'mount') return false;
+        if (item.realm > maxRealm) return false;
+        return true;
+    });
+}
+
+export function getMountItems(maxRealm) {
+    if (!itemsDB) return [];
+    return Object.values(itemsDB).filter(item => {
+        if (item.type !== 'mount') return false;
+        if (item.realm > maxRealm) return false;
+        return true;
+    });
+}
+
+export function getCrystalsInInventory() {
+    if (!itemsDB) return [];
+    const crystals = [];
+    const grouped = {};
+    for (let i = 0; i < MAX_SLOTS; i++) {
+        const slot = playerData.inventory[i];
+        if (!slot) continue;
+        const def = itemsDB[slot.itemId];
+        if (def && def.type === 'crystal') {
+            const key = def.subtype + '_' + def.tier;
+            if (!grouped[key]) {
+                grouped[key] = { itemId: slot.itemId, def, totalQty: 0, indices: [] };
+            }
+            grouped[key].totalQty += slot.quantity;
+            grouped[key].indices.push(i);
+        }
+    }
+    return Object.values(grouped);
+}
+
+export function upgradeCrystal(itemId) {
+    const def = itemsDB ? itemsDB[itemId] : null;
+    if (!def || def.type !== 'crystal') return false;
+
+    const nextTier = def.tier + 1;
+    const upgradedId = `crystal_${def.subtype}_${nextTier}`;
+    const upgradedDef = itemsDB ? itemsDB[upgradedId] : null;
+    if (!upgradedDef) return false;
+
+    if (!hasItem(itemId, 3)) return false;
+
+    removeItemById(itemId, 3);
+    addItem(upgradedId, 1);
+    return true;
+}
+
+export function scrapCrystal(inventoryIndex) {
+    const slot = playerData.inventory[inventoryIndex];
+    if (!slot) return 0;
+
+    const def = itemsDB ? itemsDB[slot.itemId] : null;
+    if (!def || def.type !== 'crystal') return 0;
+
+    const dustGain = def.tier * 5;
+    removeItemByIndex(inventoryIndex, 1);
+    playerData.crystalDust += dustGain;
+    return dustGain;
+}
+
+export function getInventoryItems() {
+    const items = [];
+    for (let i = 0; i < MAX_SLOTS; i++) {
+        const slot = playerData.inventory[i];
+        if (slot) {
+            items.push({ ...slot, inventoryIndex: i });
+        }
+    }
+    return items;
+}
+
 export function rollLoot(realm) {
     if (!itemsDB || !lootTables) return [];
 
