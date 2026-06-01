@@ -3,6 +3,7 @@ import { INTERNAL_W, INTERNAL_H } from '../RenderConfig.js';
 import { transitionTo } from '../Transition.js';
 import { STATES } from '../GameStateManager.js';
 import { playerData } from '../GameData.js';
+import { calculateStats } from '../Inventory.js';
 
 let scene = null;
 let dungeonEntrances = [];
@@ -40,6 +41,8 @@ function generateEntrances(mapWidth) {
 
 export default {
     enter() {
+        calculateStats();
+
         if (playerData.fromDungeon) {
             playerData.fromDungeon = false;
             if (playerData.justClearedDungeon && playerData.pendingDungeonEntranceIndex >= 0) {
@@ -58,6 +61,9 @@ export default {
             type: 'overworld',
             dungeonEntrances: dungeonEntrances,
             onDungeonEnter: (entrance) => {
+                if (scene && scene.player) {
+                    playerData.health = scene.player.health;
+                }
                 playerData.pendingDungeonID = entrance.dungeonID;
                 playerData.pendingDungeonEntranceIndex = entrance.index;
                 playerData.fromDungeon = false;
@@ -77,10 +83,21 @@ export default {
         scene = null;
     },
     update(dt) {
+        if (playerData.inventoryMessageTimer > 0) {
+            playerData.inventoryMessageTimer -= dt;
+        }
         if (scene) scene.update(dt);
     },
     render(c) {
         if (scene) scene.render(c);
+        if (playerData.inventoryMessageTimer > 0 && playerData.inventoryMessage) {
+            c.save();
+            c.font = '5px monospace';
+            c.textAlign = 'center';
+            c.fillStyle = '#4caf50';
+            c.fillText(playerData.inventoryMessage, INTERNAL_W / 2, 30);
+            c.restore();
+        }
     },
     getDebugInfo() {
         const info = scene ? scene.getDebugInfo() : {};

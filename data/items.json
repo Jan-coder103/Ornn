@@ -1,0 +1,585 @@
+{
+  "items": {
+    "leather_cap": {
+      "id": "leather_cap",
+      "name": "Leather Cap",
+      "type": "helmet",
+      "rarity": "common",
+      "stats": { "hpBonus": 1, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 1,
+      "sellValue": 10,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#8d6e63"
+    },
+    "iron_helm": {
+      "id": "iron_helm",
+      "name": "Iron Helm",
+      "type": "helmet",
+      "rarity": "uncommon",
+      "stats": { "hpBonus": 2, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 1,
+      "sellValue": 25,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#78909c"
+    },
+    "steel_helm": {
+      "id": "steel_helm",
+      "name": "Steel Helm",
+      "type": "helmet",
+      "rarity": "rare",
+      "stats": { "hpBonus": 4, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 1,
+      "sellValue": 60,
+      "realm": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#b0bec5"
+    },
+    "dragon_crown": {
+      "id": "dragon_crown",
+      "name": "Dragon Crown",
+      "type": "helmet",
+      "rarity": "epic",
+      "stats": { "hpBonus": 6, "damageBonus": 1, "speedBonus": 0 },
+      "crystalSlots": 1,
+      "sellValue": 150,
+      "realm": 3,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#ff6f00"
+    },
+
+    "leather_vest": {
+      "id": "leather_vest",
+      "name": "Leather Vest",
+      "type": "chest",
+      "rarity": "common",
+      "stats": { "hpBonus": 2, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 1,
+      "sellValue": 12,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#6d4c41"
+    },
+    "chainmail": {
+      "id": "chainmail",
+      "name": "Chainmail",
+      "type": "chest",
+      "rarity": "uncommon",
+      "stats": { "hpBonus": 4, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 1,
+      "sellValue": 28,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#90a4ae"
+    },
+    "plate_armor": {
+      "id": "plate_armor",
+      "name": "Plate Armor",
+      "type": "chest",
+      "rarity": "rare",
+      "stats": { "hpBonus": 6, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 1,
+      "sellValue": 65,
+      "realm": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#cfd8dc"
+    },
+    "dragon_plate": {
+      "id": "dragon_plate",
+      "name": "Dragon Plate",
+      "type": "chest",
+      "rarity": "epic",
+      "stats": { "hpBonus": 8, "damageBonus": 1, "speedBonus": 0 },
+      "crystalSlots": 1,
+      "sellValue": 160,
+      "realm": 3,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#e65100"
+    },
+
+    "sandals": {
+      "id": "sandals",
+      "name": "Sandals",
+      "type": "shoes",
+      "rarity": "common",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0.1 },
+      "crystalSlots": 1,
+      "sellValue": 10,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#d7ccc8"
+    },
+    "leather_boots": {
+      "id": "leather_boots",
+      "name": "Leather Boots",
+      "type": "shoes",
+      "rarity": "uncommon",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0.15 },
+      "crystalSlots": 1,
+      "sellValue": 25,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#5d4037"
+    },
+    "iron_greaves": {
+      "id": "iron_greaves",
+      "name": "Iron Greaves",
+      "type": "shoes",
+      "rarity": "rare",
+      "stats": { "hpBonus": 1, "damageBonus": 0, "speedBonus": 0.2 },
+      "crystalSlots": 1,
+      "sellValue": 60,
+      "realm": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#607d8b"
+    },
+    "winged_boots": {
+      "id": "winged_boots",
+      "name": "Winged Boots",
+      "type": "shoes",
+      "rarity": "epic",
+      "stats": { "hpBonus": 2, "damageBonus": 0, "speedBonus": 0.3 },
+      "crystalSlots": 1,
+      "sellValue": 150,
+      "realm": 3,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#42a5f5"
+    },
+
+    "copper_ring": {
+      "id": "copper_ring",
+      "name": "Copper Ring",
+      "type": "ring",
+      "rarity": "common",
+      "stats": { "hpBonus": 0, "damageBonus": 1, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 10,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#ff8f00"
+    },
+    "silver_ring": {
+      "id": "silver_ring",
+      "name": "Silver Ring",
+      "type": "ring",
+      "rarity": "uncommon",
+      "stats": { "hpBonus": 0, "damageBonus": 2, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 25,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#e0e0e0"
+    },
+    "gold_ring": {
+      "id": "gold_ring",
+      "name": "Gold Ring",
+      "type": "ring",
+      "rarity": "rare",
+      "stats": { "hpBonus": 1, "damageBonus": 3, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 60,
+      "realm": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#ffd54f"
+    },
+    "dragon_ring": {
+      "id": "dragon_ring",
+      "name": "Dragon Ring",
+      "type": "ring",
+      "rarity": "epic",
+      "stats": { "hpBonus": 2, "damageBonus": 5, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 150,
+      "realm": 3,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#f44336"
+    },
+
+    "beginner_tome": {
+      "id": "beginner_tome",
+      "name": "Beginner Tome",
+      "type": "tome",
+      "rarity": "common",
+      "stats": { "hpBonus": 1, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 10,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#81c784"
+    },
+    "adventurer_tome": {
+      "id": "adventurer_tome",
+      "name": "Adventurer Tome",
+      "type": "tome",
+      "rarity": "uncommon",
+      "stats": { "hpBonus": 2, "damageBonus": 0, "speedBonus": 0.05 },
+      "crystalSlots": 0,
+      "sellValue": 25,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#66bb6a"
+    },
+    "warrior_tome": {
+      "id": "warrior_tome",
+      "name": "Warrior Tome",
+      "type": "tome",
+      "rarity": "rare",
+      "stats": { "hpBonus": 3, "damageBonus": 1, "speedBonus": 0.1 },
+      "crystalSlots": 0,
+      "sellValue": 60,
+      "realm": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#43a047"
+    },
+    "ancient_tome": {
+      "id": "ancient_tome",
+      "name": "Ancient Tome",
+      "type": "tome",
+      "rarity": "epic",
+      "stats": { "hpBonus": 4, "damageBonus": 2, "speedBonus": 0.15 },
+      "crystalSlots": 0,
+      "sellValue": 150,
+      "realm": 3,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#2e7d32"
+    },
+
+    "brown_horse": {
+      "id": "brown_horse",
+      "name": "Brown Horse",
+      "type": "mount",
+      "rarity": "common",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0, "mountSpeedMult": 1.3 },
+      "crystalSlots": 0,
+      "sellValue": 30,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#795548"
+    },
+    "white_horse": {
+      "id": "white_horse",
+      "name": "White Horse",
+      "type": "mount",
+      "rarity": "uncommon",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0, "mountSpeedMult": 1.4 },
+      "crystalSlots": 0,
+      "sellValue": 50,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#f5f5f5"
+    },
+    "armored_horse": {
+      "id": "armored_horse",
+      "name": "Armored Horse",
+      "type": "mount",
+      "rarity": "rare",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0, "mountSpeedMult": 1.5 },
+      "crystalSlots": 0,
+      "sellValue": 80,
+      "realm": 2,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#78909c"
+    },
+    "dragon_mount": {
+      "id": "dragon_mount",
+      "name": "Dragon Mount",
+      "type": "mount",
+      "rarity": "epic",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0, "mountSpeedMult": 1.6 },
+      "crystalSlots": 0,
+      "sellValue": 200,
+      "realm": 3,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#e53935"
+    },
+
+    "crystal_red_1": {
+      "id": "crystal_red_1",
+      "name": "Red Crystal Shard",
+      "type": "crystal",
+      "subtype": "red",
+      "tier": 1,
+      "rarity": "common",
+      "stats": { "hpBonus": 0, "damageBonus": 1, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 5,
+      "realm": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "color": "#f44336"
+    },
+    "crystal_red_2": {
+      "id": "crystal_red_2",
+      "name": "Red Crystal",
+      "type": "crystal",
+      "subtype": "red",
+      "tier": 2,
+      "rarity": "uncommon",
+      "stats": { "hpBonus": 0, "damageBonus": 2, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 15,
+      "realm": 2,
+      "stackable": true,
+      "maxStack": 99,
+      "color": "#e53935"
+    },
+    "crystal_red_3": {
+      "id": "crystal_red_3",
+      "name": "Red Crystal Core",
+      "type": "crystal",
+      "subtype": "red",
+      "tier": 3,
+      "rarity": "rare",
+      "stats": { "hpBonus": 0, "damageBonus": 4, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 40,
+      "realm": 3,
+      "stackable": true,
+      "maxStack": 99,
+      "color": "#c62828"
+    },
+    "crystal_blue_1": {
+      "id": "crystal_blue_1",
+      "name": "Blue Crystal Shard",
+      "type": "crystal",
+      "subtype": "blue",
+      "tier": 1,
+      "rarity": "common",
+      "stats": { "hpBonus": 1, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 5,
+      "realm": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "color": "#2196f3"
+    },
+    "crystal_blue_2": {
+      "id": "crystal_blue_2",
+      "name": "Blue Crystal",
+      "type": "crystal",
+      "subtype": "blue",
+      "tier": 2,
+      "rarity": "uncommon",
+      "stats": { "hpBonus": 3, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 15,
+      "realm": 2,
+      "stackable": true,
+      "maxStack": 99,
+      "color": "#1e88e5"
+    },
+    "crystal_blue_3": {
+      "id": "crystal_blue_3",
+      "name": "Blue Crystal Core",
+      "type": "crystal",
+      "subtype": "blue",
+      "tier": 3,
+      "rarity": "rare",
+      "stats": { "hpBonus": 5, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 40,
+      "realm": 3,
+      "stackable": true,
+      "maxStack": 99,
+      "color": "#1565c0"
+    },
+    "crystal_green_1": {
+      "id": "crystal_green_1",
+      "name": "Green Crystal Shard",
+      "type": "crystal",
+      "subtype": "green",
+      "tier": 1,
+      "rarity": "common",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0.05 },
+      "crystalSlots": 0,
+      "sellValue": 5,
+      "realm": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "color": "#4caf50"
+    },
+    "crystal_green_2": {
+      "id": "crystal_green_2",
+      "name": "Green Crystal",
+      "type": "crystal",
+      "subtype": "green",
+      "tier": 2,
+      "rarity": "uncommon",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0.1 },
+      "crystalSlots": 0,
+      "sellValue": 15,
+      "realm": 2,
+      "stackable": true,
+      "maxStack": 99,
+      "color": "#388e3c"
+    },
+    "crystal_green_3": {
+      "id": "crystal_green_3",
+      "name": "Green Crystal Core",
+      "type": "crystal",
+      "subtype": "green",
+      "tier": 3,
+      "rarity": "rare",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0.2 },
+      "crystalSlots": 0,
+      "sellValue": 40,
+      "realm": 3,
+      "stackable": true,
+      "maxStack": 99,
+      "color": "#2e7d32"
+    },
+
+    "fishing_pole": {
+      "id": "fishing_pole",
+      "name": "Fishing Pole",
+      "type": "tool",
+      "rarity": "common",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 5,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#8d6e63"
+    },
+    "pickaxe": {
+      "id": "pickaxe",
+      "name": "Pickaxe",
+      "type": "tool",
+      "rarity": "common",
+      "stats": { "hpBonus": 0, "damageBonus": 0, "speedBonus": 0 },
+      "crystalSlots": 0,
+      "sellValue": 5,
+      "realm": 1,
+      "stackable": false,
+      "maxStack": 1,
+      "color": "#9e9e9e"
+    }
+  },
+
+  "lootTables": {
+    "1": {
+      "common": {
+        "weight": 60,
+        "items": [
+          "leather_cap", "leather_vest", "sandals",
+          "copper_ring", "beginner_tome",
+          "crystal_red_1", "crystal_blue_1", "crystal_green_1"
+        ]
+      },
+      "uncommon": {
+        "weight": 30,
+        "items": [
+          "iron_helm", "chainmail", "leather_boots",
+          "silver_ring", "adventurer_tome"
+        ]
+      },
+      "rare": {
+        "weight": 10,
+        "items": [
+          "steel_helm", "plate_armor", "iron_greaves",
+          "gold_ring", "warrior_tome"
+        ]
+      },
+      "epic": {
+        "weight": 0,
+        "items": []
+      }
+    },
+    "2": {
+      "common": {
+        "weight": 30,
+        "items": [
+          "leather_cap", "leather_vest", "sandals",
+          "copper_ring", "beginner_tome",
+          "crystal_red_1", "crystal_blue_1", "crystal_green_1"
+        ]
+      },
+      "uncommon": {
+        "weight": 45,
+        "items": [
+          "iron_helm", "chainmail", "leather_boots",
+          "silver_ring", "adventurer_tome",
+          "crystal_red_2", "crystal_blue_2", "crystal_green_2"
+        ]
+      },
+      "rare": {
+        "weight": 20,
+        "items": [
+          "steel_helm", "plate_armor", "iron_greaves",
+          "gold_ring", "warrior_tome"
+        ]
+      },
+      "epic": {
+        "weight": 5,
+        "items": [
+          "dragon_crown", "dragon_plate", "winged_boots",
+          "dragon_ring", "ancient_tome"
+        ]
+      }
+    },
+    "3": {
+      "common": {
+        "weight": 10,
+        "items": [
+          "crystal_red_1", "crystal_blue_1", "crystal_green_1"
+        ]
+      },
+      "uncommon": {
+        "weight": 30,
+        "items": [
+          "iron_helm", "chainmail", "leather_boots",
+          "silver_ring", "adventurer_tome",
+          "crystal_red_2", "crystal_blue_2", "crystal_green_2"
+        ]
+      },
+      "rare": {
+        "weight": 40,
+        "items": [
+          "steel_helm", "plate_armor", "iron_greaves",
+          "gold_ring", "warrior_tome",
+          "crystal_red_3", "crystal_blue_3", "crystal_green_3"
+        ]
+      },
+      "epic": {
+        "weight": 20,
+        "items": [
+          "dragon_crown", "dragon_plate", "winged_boots",
+          "dragon_ring", "ancient_tome"
+        ]
+      }
+    }
+  },
+
+  "rarityColors": {
+    "common": "#bdbdbd",
+    "uncommon": "#4caf50",
+    "rare": "#2196f3",
+    "epic": "#9c27b0"
+  }
+}

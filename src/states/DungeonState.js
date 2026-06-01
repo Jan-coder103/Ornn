@@ -4,6 +4,7 @@ import { transitionTo, isInputBlocked } from '../Transition.js';
 import { STATES } from '../GameStateManager.js';
 import { playerData } from '../GameData.js';
 import { wasKeyPressed } from '../Input.js';
+import { calculateStats } from '../Inventory.js';
 
 const DUNGEON_MAPS = {
     1: [
@@ -41,7 +42,11 @@ function advanceRoom() {
 }
 
 function loadCurrentRoom() {
+    if (scene && scene.player) {
+        playerData.health = scene.player.health;
+    }
     if (scene) scene.destroy();
+    calculateStats();
     const rooms = getRooms();
     const room = rooms[currentRoom];
     scene = new Scene({
@@ -71,6 +76,9 @@ export default {
         loadCurrentRoom();
     },
     exit() {
+        if (scene && scene.player) {
+            playerData.health = scene.player.health;
+        }
         if (scene) scene.destroy();
         scene = null;
     },

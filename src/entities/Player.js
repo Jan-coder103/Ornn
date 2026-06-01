@@ -6,6 +6,7 @@ import {
     PLAYER_INVINCIBLE_FRAMES, PLAYER_KNOCKBACK_X, PLAYER_KNOCKBACK_Y
 } from '../CONFIG.js';
 import * as Input from '../Input.js';
+import { playerData } from '../GameData.js';
 
 export class Player {
     constructor(x, y) {
@@ -13,6 +14,8 @@ export class Player {
         this.facing = 1;
         this.health = START_HEALTH;
         this.maxHealth = START_HEALTH;
+        this.damage = 1;
+        this.speed = PLAYER_SPEED;
         this.canAttack = true;
         this._invincibleTimer = 0;
 
@@ -21,6 +24,22 @@ export class Player {
         this._jumpHeld = false;
         this._spawnX = x;
         this._spawnY = y;
+
+        this.applyGearStats();
+    }
+
+    applyGearStats() {
+        const stats = playerData.totalStats || { hpBonus: 0, damageBonus: 0, speedBonus: 0, mountSpeedMult: 1.0 };
+        const oldMax = this.maxHealth;
+        this.maxHealth = START_HEALTH + (stats.hpBonus || 0);
+        this.damage = 1 + (stats.damageBonus || 0);
+        this.speed = PLAYER_SPEED + (stats.speedBonus || 0);
+
+        if (oldMax > 0 && this.maxHealth !== oldMax) {
+            if (this.health > this.maxHealth) {
+                this.health = this.maxHealth;
+            }
+        }
     }
 
     tick() {
@@ -30,17 +49,19 @@ export class Player {
     handleInput() {
         const axisX = Input.getAxisX();
 
+        const currentSpeed = this.speed;
+
         if (axisX !== 0) {
-            this.body.vel.x += axisX * ACCEL;
-            if (Math.abs(this.body.vel.x) > PLAYER_SPEED) {
-                this.body.vel.x = Math.sign(this.body.vel.x) * PLAYER_SPEED;
+            this.body.vel.x += axisX * (currentSpeed / 6);
+            if (Math.abs(this.body.vel.x) > currentSpeed) {
+                this.body.vel.x = Math.sign(this.body.vel.x) * currentSpeed;
             }
             this.facing = axisX;
         } else {
             if (this.body.vel.x > 0) {
-                this.body.vel.x = Math.max(0, this.body.vel.x - DECEL);
+                this.body.vel.x = Math.max(0, this.body.vel.x - (currentSpeed / 4));
             } else if (this.body.vel.x < 0) {
-                this.body.vel.x = Math.min(0, this.body.vel.x + DECEL);
+                this.body.vel.x = Math.min(0, this.body.vel.x + (currentSpeed / 4));
             }
         }
 

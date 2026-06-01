@@ -8,6 +8,7 @@ import { Boomerang } from './entities/Boomerang.js';
 import { Enemy } from './entities/Enemy.js';
 import { Boss } from './entities/Boss.js';
 import { ParticleSystem } from './entities/Particles.js';
+import { LootDrop } from './entities/LootDrop.js';
 import { Portal } from './Portal.js';
 import { Door } from './Door.js';
 import { DungeonEntrance } from './DungeonEntrance.js';
@@ -15,6 +16,11 @@ import { ENEMY_TEMPLATES } from './EnemyTemplates.js';
 import { transitionTo, isInputBlocked } from './Transition.js';
 import { STATES } from './GameStateManager.js';
 import * as Input from './Input.js';
+import { playerData } from './GameData.js';
+import {
+    setItemsDB, addItem, rollLoot, calculateStats, initInventory,
+    socketCrystal, getEquippedItem
+} from './Inventory.js';
 
 const GROUND_COLORS = {
     1: '#87CEEB',
@@ -44,6 +50,7 @@ export class Scene {
         this.camera = null;
         this.portals = [];
         this.dungeonEntrances = [];
+        this.lootDrops = [];
         this.mapPixelW = 0;
         this.mapPixelH = 0;
         this._debugInfo = { playerX: null, playerY: null, entityCount: 0 };
@@ -51,9 +58,15 @@ export class Scene {
 
     load() {
         this.ready = false;
-        fetch(this.config.mapPath)
-            .then(r => r.json())
-            .then(data => this._init(data))
+        const mapPromise = fetch(this.config.mapPath).then(r => r.json());
+        const itemsPromise = fetch('data/items.json').then(r => r.json());
+
+        Promise.all([mapPromise, itemsPromise])
+            .then(([mapData, itemsData]) => {
+                setItemsDB(itemsData);
+                initInventory();
+                this._init(mapData);
+            })
             .catch(err => console.error('Failed to load scene:', err));
     }
 
@@ -69,6 +82,7 @@ export class Scene {
         this.camera = null;
         this.portals = [];
         this.dungeonEntrances = [];
+        this.lootDrops = [];
         this.particles = null;
     }
 
@@ -91,6 +105,13 @@ export class Scene {
         const sy = spawn ? spawn.y * TILE : 0;
 
         this.player = new Player(sx, sy);
+
+        if (playerData.health > 0 && playerData.health <= this.player.maxHealth) {
+            this.player.health = playerData.health;
+        } else {
+            this.player.health = this.player.maxHealth;
+        }
+
         this.mapPixelW = this.tilemap.mapW * TILE;
         this.mapPixelH = this.tilemap.mapH * TILE;
 
@@ -100,6 +121,7 @@ export class Scene {
         this._bossDeathHandled = false;
         this.door = null;
         this.enemiesKilled = 0;
+        this.lootDrops = [];
 
         for (const e of entities) {
             if (e.type === 'portal') {
@@ -145,6 +167,7 @@ export class Scene {
             this._handlePortals();
             this._handleDoor();
             this._handleDungeonEntrances();
+            this._handleLootPickup();
         }
 
         this.physics.update(this.player.body);
@@ -196,6 +219,9 @@ export class Scene {
         }
         for (const entrance of this.dungeonEntrances) {
             entrance.update(dt);
+        }
+        for (const loot of this.lootDrops) {
+            loot.update(dt);
         }
 
         this._updateDebugInfo();
@@ -259,6 +285,35 @@ export class Scene {
         }
     }
 
+    _handleLootPickup() {
+        for (let i = this.lootDrops.length - 1; i >= 0; i--) {
+            const loot = this.lootDrops[i];
+            if (!loot.active) continue;
+
+            if (loot.isPlayerNear(this.player.body) && Input.interactPressed()) {
+                const success = addItem(loot.itemId, 1);
+                if (success) {
+                    loot.active = false;
+                    this.lootDrops.splice(i, 1);
+
+                    this.particles.emit(loot.x + loot.w / 2, loot.y + loot.h / 2, 6, {
+                        speedMin: 0.3, speedMax: 1.0,
+                        lifeMin: 8, lifeMax: 15,
+                        size: 2,
+                        colors: ['#fff', '#ffeb3b', '#4caf50'],
+                    });
+
+                    playerData.inventoryMessage = 'Picked up item';
+                    playerData.inventoryMessageTimer = 1.0;
+                } else {
+                    playerData.inventoryMessage = 'Inventory full!';
+                    playerData.inventoryMessageTimer = 1.5;
+                }
+                return;
+            }
+        }
+    }
+
     _updateBoomerang() {
         if (!this.boomerang) return;
 
@@ -279,6 +334,7 @@ export class Scene {
         const bs = this.boomerang.size;
         const bx = this.boomerang.x - bs / 2;
         const by = this.boomerang.y - bs / 2;
+        const dmg = this.player.damage;
 
         for (const enemy of this.enemies) {
             if (enemy.isDead) continue;
@@ -286,7 +342,7 @@ export class Scene {
 
             if (aabbOverlap(bx, by, bs, bs, enemy.body.pos.x, enemy.body.pos.y, enemy.body.w, enemy.body.h)) {
                 const dir = Math.sign(this.boomerang.vx) || this.player.facing;
-                const killed = enemy.takeDamage(1, dir);
+                const killed = enemy.takeDamage(dmg, dir);
                 this.boomerang.registerHit(enemy.id);
 
                 this.particles.emit(enemy.body.centerX, enemy.body.centerY, 5, {
@@ -310,7 +366,7 @@ export class Scene {
 
         if (this.boss && !this.boss.isDead && this.boomerang && this.boomerang.canHit(this.boss.id)) {
             if (aabbOverlap(bx, by, bs, bs, this.boss.body.pos.x, this.boss.body.pos.y, this.boss.body.w, this.boss.body.h)) {
-                const killed = this.boss.takeDamage(1);
+                const killed = this.boss.takeDamage(dmg);
                 this.boomerang.registerHit(this.boss.id);
 
                 this.particles.emit(this.boss.body.centerX, this.boss.body.centerY, 5, {
@@ -407,12 +463,22 @@ export class Scene {
 
         this._bossDeathHandled = true;
 
-        const tileX = Math.floor(this.boss.body.centerX / TILE);
+        const bossCX = this.boss.body.centerX;
+        const bossCY = this.boss.body.centerY;
+        const tileX = Math.floor(bossCX / TILE);
         const tileY = Math.floor(this.boss.body.pos.y / TILE);
         const portalTarget = this.config.bossPortalTarget || 'HUB';
-        this.portals.push(new Portal(tileX, tileY, portalTarget));
+        this.portals.push(new Portal(tileX + 2, tileY, portalTarget));
 
-        this.particles.emit(this.boss.body.centerX, this.boss.body.centerY, 20, {
+        const realm = playerData.realmUnlocked || 1;
+        const droppedItems = rollLoot(realm);
+        for (let i = 0; i < droppedItems.length; i++) {
+            const offsetX = (i - (droppedItems.length - 1) / 2) * 14;
+            const loot = new LootDrop(bossCX + offsetX - 4, bossCY - 4, droppedItems[i]);
+            this.lootDrops.push(loot);
+        }
+
+        this.particles.emit(bossCX, bossCY, 20, {
             speedMin: 0.3, speedMax: 1.5,
             lifeMin: 15, lifeMax: 30,
             size: 4,
@@ -458,6 +524,7 @@ export class Scene {
         }
         this._debugInfo.entityCount = 1 + this.enemies.length + (this.boomerang ? 1 : 0) + this.particles.count;
         this._debugInfo.enemiesKilled = this.enemiesKilled;
+        this._debugInfo.lootDrops = this.lootDrops.length;
         if (this.boss) {
             this._debugInfo.bossHP = this.boss.hp;
             this._debugInfo.bossPhase = this.boss.phase;
@@ -493,6 +560,10 @@ export class Scene {
 
         if (this.door) {
             this.door.render(c, cx, cy);
+        }
+
+        for (const loot of this.lootDrops) {
+            loot.render(c, cx, cy);
         }
 
         for (const enemy of this.enemies) {
@@ -580,6 +651,11 @@ export class Scene {
                 entrance.renderPrompt(c, cameraX, cameraY);
             }
         }
+        for (const loot of this.lootDrops) {
+            if (loot.active && loot.isPlayerNear(this.player.body)) {
+                loot.renderPrompt(c, cameraX, cameraY);
+            }
+        }
     }
 
     _renderHUD(c) {
@@ -608,5 +684,12 @@ export class Scene {
             }
             c.fillRect(hx, startY, heartSize, heartSize);
         }
+
+        c.save();
+        c.font = '5px monospace';
+        c.textAlign = 'right';
+        c.fillStyle = '#ffc107';
+        c.fillText('$' + playerData.coinsBank, INTERNAL_W - 4, 10);
+        c.restore();
     }
 }
