@@ -6,6 +6,13 @@ export const playerData = {
     xp: 0,
     realmUnlocked: 1,
     health: 6,
+
+    fromDungeon: false,
+    pendingDungeonID: 1,
+    pendingDungeonEntranceIndex: -1,
+    justClearedDungeon: false,
+    deathMessage: '',
+    deathMessageTimer: 0,
 };
 
 export function resetPlayerData() {
@@ -16,4 +23,10 @@ export function resetPlayerData() {
     playerData.xp = 0;
     playerData.realmUnlocked = 1;
     playerData.health = 6;
+    playerData.fromDungeon = false;
+    playerData.pendingDungeonID = 1;
+    playerData.pendingDungeonEntranceIndex = -1;
+    playerData.justClearedDungeon = false;
+    playerData.deathMessage = '';
+    playerData.deathMessageTimer = 0;
 }

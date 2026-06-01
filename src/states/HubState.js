@@ -1,11 +1,13 @@
 import { Scene } from '../Scene.js';
-import { isInputBlocked } from '../Transition.js';
+import { INTERNAL_W, INTERNAL_H } from '../RenderConfig.js';
+import { playerData } from '../GameData.js';
 
 let scene = null;
 
 export default {
     enter() {
-        scene = new Scene({ mapPath: 'data/maps/placeholder.json', type: 'hub' });
+        playerData.fromDungeon = false;
+        scene = new Scene({ mapPath: 'data/maps/hub.json', type: 'hub' });
         scene.load();
     },
     exit() {
@@ -13,10 +15,21 @@ export default {
         scene = null;
     },
     update(dt) {
+        if (playerData.deathMessageTimer > 0) {
+            playerData.deathMessageTimer -= dt;
+        }
         if (scene) scene.update(dt);
     },
     render(c) {
         if (scene) scene.render(c);
+        if (playerData.deathMessageTimer > 0 && playerData.deathMessage) {
+            c.save();
+            c.font = '6px monospace';
+            c.textAlign = 'center';
+            c.fillStyle = '#f44336';
+            c.fillText(playerData.deathMessage, INTERNAL_W / 2, 20);
+            c.restore();
+        }
     },
     getDebugInfo() {
         return scene ? scene.getDebugInfo() : {};

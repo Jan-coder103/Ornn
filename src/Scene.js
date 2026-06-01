@@ -10,6 +10,7 @@ import { Boss } from './entities/Boss.js';
 import { ParticleSystem } from './entities/Particles.js';
 import { Portal } from './Portal.js';
 import { Door } from './Door.js';
+import { DungeonEntrance } from './DungeonEntrance.js';
 import { ENEMY_TEMPLATES } from './EnemyTemplates.js';
 import { transitionTo, isInputBlocked } from './Transition.js';
 import { STATES } from './GameStateManager.js';
@@ -42,6 +43,7 @@ export class Scene {
         this.particles = null;
         this.camera = null;
         this.portals = [];
+        this.dungeonEntrances = [];
         this.mapPixelW = 0;
         this.mapPixelH = 0;
         this._debugInfo = { playerX: null, playerY: null, entityCount: 0 };
@@ -66,6 +68,7 @@ export class Scene {
         this.tilemap = null;
         this.camera = null;
         this.portals = [];
+        this.dungeonEntrances = [];
         this.particles = null;
     }
 
@@ -76,9 +79,7 @@ export class Scene {
         this.physics = new Physics();
         this.physics.setMap(this.tilemap);
         this.physics.onDeath = () => {
-            this.player.respawn();
-            this.boomerang = null;
-            this.player.canAttack = true;
+            this._handleDeath();
         };
 
         this.camera = new Camera();
@@ -115,6 +116,15 @@ export class Scene {
 
         this.totalEnemies = this.enemies.length;
 
+        if (this.config.dungeonEntrances) {
+            for (let i = 0; i < this.config.dungeonEntrances.length; i++) {
+                const de = this.config.dungeonEntrances[i];
+                const entrance = new DungeonEntrance(de.x, de.y, de.dungeonID, i);
+                entrance.cleared = !!de.cleared;
+                this.dungeonEntrances.push(entrance);
+            }
+        }
+
         this.camera.snapTo(this.player.body.centerX, this.player.body.centerY, this.mapPixelW, this.mapPixelH);
 
         this.ready = true;
@@ -129,17 +139,18 @@ export class Scene {
 
         if (!blocked) {
             this.player.handleInput();
-            this._handleAttack();
+            if (this.config.type !== 'hub') {
+                this._handleAttack();
+            }
             this._handlePortals();
             this._handleDoor();
+            this._handleDungeonEntrances();
         }
 
         this.physics.update(this.player.body);
 
         if (this.player.body.dead) {
-            this.player.respawn();
-            this.boomerang = null;
-            this.player.canAttack = true;
+            this._handleDeath();
             return;
         }
 
@@ -167,9 +178,7 @@ export class Scene {
         }
 
         if (this.player.health <= 0) {
-            this.player.respawn();
-            this.boomerang = null;
-            this.player.canAttack = true;
+            this._handleDeath();
             return;
         }
 
@@ -185,8 +194,21 @@ export class Scene {
         if (this.door) {
             this.door.update(dt);
         }
+        for (const entrance of this.dungeonEntrances) {
+            entrance.update(dt);
+        }
 
         this._updateDebugInfo();
+    }
+
+    _handleDeath() {
+        if (this.config.onPlayerDeath) {
+            this.config.onPlayerDeath();
+            return;
+        }
+        this.player.respawn();
+        this.boomerang = null;
+        this.player.canAttack = true;
     }
 
     _handleAttack() {
@@ -222,6 +244,17 @@ export class Scene {
         if (this.door.isPlayerNear(this.player.body) && Input.interactPressed()) {
             if (this.config.onRoomCleared) {
                 this.config.onRoomCleared();
+            }
+        }
+    }
+
+    _handleDungeonEntrances() {
+        for (const entrance of this.dungeonEntrances) {
+            if (!entrance.cleared && entrance.isPlayerNear(this.player.body) && Input.interactPressed()) {
+                if (this.config.onDungeonEnter) {
+                    this.config.onDungeonEnter(entrance);
+                }
+                return;
             }
         }
     }
@@ -376,7 +409,8 @@ export class Scene {
 
         const tileX = Math.floor(this.boss.body.centerX / TILE);
         const tileY = Math.floor(this.boss.body.pos.y / TILE);
-        this.portals.push(new Portal(tileX, tileY, 'HUB'));
+        const portalTarget = this.config.bossPortalTarget || 'HUB';
+        this.portals.push(new Portal(tileX, tileY, portalTarget));
 
         this.particles.emit(this.boss.body.centerX, this.boss.body.centerY, 20, {
             speedMin: 0.3, speedMax: 1.5,
@@ -448,6 +482,10 @@ export class Scene {
         c.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
 
         this._renderMap(c, cx, cy);
+
+        for (const entrance of this.dungeonEntrances) {
+            entrance.render(c, cx, cy);
+        }
 
         for (const portal of this.portals) {
             portal.render(c, cx, cy);
@@ -536,6 +574,11 @@ export class Scene {
         }
         if (this.door && this.door.active && this.door.isPlayerNear(this.player.body)) {
             this.door.renderPrompt(c, cameraX, cameraY);
+        }
+        for (const entrance of this.dungeonEntrances) {
+            if (entrance.isPlayerNear(this.player.body)) {
+                entrance.renderPrompt(c, cameraX, cameraY);
+            }
         }
     }
 
