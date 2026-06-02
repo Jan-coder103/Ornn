@@ -7,6 +7,7 @@ import {
 } from '../CONFIG.js';
 import * as Input from '../Input.js';
 import { playerData } from '../GameData.js';
+import * as Audio from '../AudioManager.js';
 
 export class Player {
     constructor(x, y) {
@@ -82,6 +83,7 @@ export class Player {
             this._coyoteTimer = 0;
             this._jumpBufferTimer = 0;
             this._jumpHeld = true;
+            Audio.play('jump', 0.3);
         }
 
         if (this._jumpHeld && Input.wasKeyReleased(' ')) {
@@ -104,6 +106,7 @@ export class Player {
         const dir = this.body.centerX < fromX ? -1 : 1;
         this.body.vel.x = dir * PLAYER_KNOCKBACK_X;
         this.body.vel.y = PLAYER_KNOCKBACK_Y;
+        Audio.play('hit', 0.5);
         return true;
     }
 

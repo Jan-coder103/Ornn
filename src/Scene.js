@@ -28,6 +28,8 @@ import {
     ENEMY_XP, BOSS_XP, ENEMY_COIN_MIN, ENEMY_COIN_MAX,
     BOSS_COIN_MIN, BOSS_COIN_MAX, REALM_MULT
 } from './CONFIG.js';
+import * as Audio from './AudioManager.js';
+import * as GameJuice from './GameJuice.js';
 
 const GROUND_COLORS = {
     1: '#87CEEB',
@@ -266,6 +268,7 @@ export class Scene {
     }
 
     _handleDeath() {
+        Audio.play('death', 0.6);
         if (this.config.onPlayerDeath) {
             this.config.onPlayerDeath();
             return;
@@ -282,11 +285,14 @@ export class Scene {
             this.boomerang = new Boomerang(cx, cy, this.player.facing);
             this.player.canAttack = false;
 
+            Audio.play('throw', 0.5);
+
             this.particles.emit(cx, cy, 6, {
                 speedMin: 0.5, speedMax: 1.5,
                 lifeMin: 6, lifeMax: 12,
                 size: 2,
                 colors: ['#ffeb3b', '#fff', '#ff9800'],
+                glow: true,
             });
         }
     }
@@ -294,6 +300,7 @@ export class Scene {
     _handlePortals() {
         for (const portal of this.portals) {
             if (portal.isPlayerNear(this.player.body) && Input.interactPressed()) {
+                Audio.play('portal', 0.5);
                 const targetState = STATES[portal.target];
                 if (targetState) {
                     transitionTo(targetState);
@@ -333,6 +340,7 @@ export class Scene {
                 if (success) {
                     loot.active = false;
                     this.lootDrops.splice(i, 1);
+                    Audio.play('pickup', 0.5);
 
                     this.particles.emit(loot.x + loot.w / 2, loot.y + loot.h / 2, 6, {
                         speedMin: 0.3, speedMax: 1.0,
@@ -362,11 +370,14 @@ export class Scene {
                 coin.active = false;
                 this.coinDrops.splice(i, 1);
 
+                Audio.play('coin', 0.4);
+
                 this.particles.emit(coin.x + coin.w / 2, coin.y + coin.h / 2, 4, {
                     speedMin: 0.3, speedMax: 0.8,
                     lifeMin: 6, lifeMax: 12,
                     size: 2,
                     colors: ['#ffc107', '#fff'],
+                    glow: true,
                 });
             }
         }
@@ -391,11 +402,13 @@ export class Scene {
         if (!this.boomerang.active) {
             this.boomerang = null;
             this.player.canAttack = true;
+            Audio.play('catch', 0.4);
             this.particles.emit(this.player.body.centerX, this.player.body.centerY, 4, {
                 speedMin: 0.3, speedMax: 1.0,
                 lifeMin: 5, lifeMax: 10,
                 size: 2,
                 colors: ['#ffeb3b', '#fff'],
+                glow: true,
             });
             return;
         }
@@ -414,6 +427,8 @@ export class Scene {
                 const killed = enemy.takeDamage(dmg, dir);
                 this.boomerang.registerHit(enemy.id);
 
+                Audio.play('hit', 0.5);
+
                 this.particles.emit(enemy.body.centerX, enemy.body.centerY, 5, {
                     speedMin: 0.5, speedMax: 1.5,
                     lifeMin: 5, lifeMax: 10,
@@ -423,6 +438,8 @@ export class Scene {
 
                 if (killed) {
                     this.enemiesKilled++;
+                    GameJuice.triggerHitstop(4);
+                    Audio.play('kill', 0.6);
 
                     const coinAmount = ENEMY_COIN_MIN + Math.floor(Math.random() * (ENEMY_COIN_MAX - ENEMY_COIN_MIN + 1));
                     this.coinDrops.push(new CoinDrop(
@@ -438,6 +455,7 @@ export class Scene {
                         lifeMin: 10, lifeMax: 20,
                         size: 3,
                         colors: ['#ffc107', '#ffeb3b', '#fff'],
+                        glow: true,
                     });
                 }
             }
@@ -448,11 +466,15 @@ export class Scene {
                 const killed = this.boss.takeDamage(dmg);
                 this.boomerang.registerHit(this.boss.id);
 
+                GameJuice.triggerShake(2);
+                Audio.play('boss_hit', 0.6);
+
                 this.particles.emit(this.boss.body.centerX, this.boss.body.centerY, 5, {
                     speedMin: 0.5, speedMax: 1.5,
                     lifeMin: 5, lifeMax: 10,
                     size: 2,
                     colors: ['#fff', '#e040fb'],
+                    glow: true,
                 });
 
                 if (killed) {
@@ -464,12 +486,15 @@ export class Scene {
                     ));
 
                     addXP(BOSS_XP);
+                    GameJuice.triggerHitstop(6);
+                    GameJuice.triggerShake(3);
 
                     this.particles.emit(this.boss.body.centerX, this.boss.body.centerY, 12, {
                         speedMin: 0.5, speedMax: 2.0,
                         lifeMin: 15, lifeMax: 30,
                         size: 3,
                         colors: ['#7b1fa2', '#e040fb', '#fff', '#ffc107'],
+                        glow: true,
                     });
                 }
             }
@@ -481,6 +506,7 @@ export class Scene {
                 lifeMin: 4, lifeMax: 8,
                 size: 2,
                 colors: ['#fff', '#ffeb3b'],
+                glow: true,
             });
         }
     }
@@ -571,6 +597,7 @@ export class Scene {
             lifeMin: 15, lifeMax: 30,
             size: 4,
             colors: ['#ffc107', '#ff9800', '#fff', '#e040fb'],
+            glow: true,
         });
 
         if (this.config.onBossDefeated) {
@@ -600,6 +627,7 @@ export class Scene {
                     lifeMin: 10, lifeMax: 20,
                     size: 3,
                     colors: ['#ffeb3b', '#fff', '#ffc107'],
+                    glow: true,
                 });
             }
         }

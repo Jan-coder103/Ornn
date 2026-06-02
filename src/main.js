@@ -5,6 +5,9 @@ import { STATES, registerState, updateState, renderState, changeState, getStateN
 import { updateTransition, renderTransition } from './Transition.js';
 import { updateDebug, renderDebug } from './Debug.js';
 import { clearFrame } from './Input.js';
+import * as AudioManager from './AudioManager.js';
+import * as GameJuice from './GameJuice.js';
+import { init as initMobileControls } from './MobileControls.js';
 
 import BootState from './states/BootState.js';
 import MenuState from './states/MenuState.js';
@@ -30,9 +33,22 @@ loader.onComplete = (loaded, failed) => {
     console.log(`Assets loaded: ${loaded}, failed: ${failed}`);
 };
 
+function initOnGesture() {
+    AudioManager.init();
+    window.removeEventListener('keydown', initOnGesture);
+    window.removeEventListener('mousedown', initOnGesture);
+    window.removeEventListener('touchstart', initOnGesture);
+}
+window.addEventListener('keydown', initOnGesture);
+window.addEventListener('mousedown', initOnGesture);
+window.addEventListener('touchstart', initOnGesture);
+
 setCallbacks(
     function update(dt) {
-        updateState(dt);
+        if (!GameJuice.isFrozen()) {
+            updateState(dt);
+        }
+        GameJuice.update();
         updateTransition(dt);
         updateDebug();
         clearFrame();
@@ -40,13 +56,26 @@ setCallbacks(
     function render(alpha) {
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
+
+        const shake = GameJuice.getShakeOffset();
+        if (shake.x !== 0 || shake.y !== 0) {
+            ctx.save();
+            ctx.translate(shake.x, shake.y);
+        }
+
         renderState(alpha);
+
+        if (shake.x !== 0 || shake.y !== 0) {
+            ctx.restore();
+        }
+
         renderTransition();
         renderDebug({ state: getStateName(), ...getDebugInfo() });
     }
 );
 
 loader.loadManifest('manifest.json').then(() => {
+    initMobileControls();
     changeState(STATES.BOOT);
     start();
 }).catch(err => {

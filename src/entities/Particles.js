@@ -1,5 +1,20 @@
-export class Particle {
-    constructor(x, y, vx, vy, life, size, color) {
+const MAX_PARTICLES = 50;
+
+class Particle {
+    constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.vx = 0;
+        this.vy = 0;
+        this.life = 0;
+        this.maxLife = 1;
+        this.size = 2;
+        this.color = '#fff';
+        this.glow = false;
+        this.active = false;
+    }
+
+    init(x, y, vx, vy, life, size, color, glow) {
         this.x = x;
         this.y = y;
         this.vx = vx;
@@ -8,6 +23,7 @@ export class Particle {
         this.maxLife = life;
         this.size = size;
         this.color = color;
+        this.glow = glow || false;
         this.active = true;
     }
 
@@ -31,13 +47,25 @@ export class Particle {
     }
 }
 
-export class ParticleSystem {
-    constructor() {
-        this.particles = [];
-    }
+const pool = [];
+for (let i = 0; i < MAX_PARTICLES; i++) {
+    pool.push(new Particle());
+}
 
+function acquire() {
+    for (const p of pool) {
+        if (!p.active) return p;
+    }
+    return null;
+}
+
+export class ParticleSystem {
     emit(x, y, count, opts) {
+        const glow = opts.glow || false;
         for (let i = 0; i < count; i++) {
+            const p = acquire();
+            if (!p) return;
+
             const angle = Math.random() * Math.PI * 2;
             const speed = (opts.speedMin || 0.2) + Math.random() * ((opts.speedMax || 0.8) - (opts.speedMin || 0.2));
             const vx = Math.cos(angle) * speed;
@@ -45,26 +73,48 @@ export class ParticleSystem {
             const life = (opts.lifeMin || 8) + Math.floor(Math.random() * ((opts.lifeMax || 16) - (opts.lifeMin || 8)));
             const size = opts.size || 2;
             const color = opts.colors ? opts.colors[Math.floor(Math.random() * opts.colors.length)] : '#fff';
-            this.particles.push(new Particle(x, y, vx, vy, life, size, color));
+            p.init(x, y, vx, vy, life, size, color, glow);
         }
     }
 
     update() {
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-            this.particles[i].update();
-            if (!this.particles[i].active) {
-                this.particles.splice(i, 1);
-            }
+        for (const p of pool) {
+            if (p.active) p.update();
         }
     }
 
     render(ctx, cameraX, cameraY) {
-        for (const p of this.particles) {
-            p.render(ctx, cameraX, cameraY);
+        let hasGlow = false;
+        for (const p of pool) {
+            if (p.active && p.glow) {
+                hasGlow = true;
+                break;
+            }
+        }
+
+        if (hasGlow) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'lighter';
+            for (const p of pool) {
+                if (p.active && p.glow) {
+                    p.render(ctx, cameraX, cameraY);
+                }
+            }
+            ctx.restore();
+        }
+
+        for (const p of pool) {
+            if (p.active && !p.glow) {
+                p.render(ctx, cameraX, cameraY);
+            }
         }
     }
 
     get count() {
-        return this.particles.length;
+        let c = 0;
+        for (const p of pool) {
+            if (p.active) c++;
+        }
+        return c;
     }
 }

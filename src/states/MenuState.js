@@ -4,6 +4,7 @@ import { transitionTo, isInputBlocked } from '../Transition.js';
 import { wasKeyPressed as wasPressed } from '../Input.js';
 import { hasSave, load, applySaveData, deleteSave } from '../SaveManager.js';
 import { resetPlayerData } from '../GameData.js';
+import * as Audio from '../AudioManager.js';
 
 const MENU_CONTINUE = [
     { label: 'Continue', key: 'continue' },
