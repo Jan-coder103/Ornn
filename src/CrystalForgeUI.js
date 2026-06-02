@@ -4,6 +4,7 @@ import {
     getCrystalsInInventory, upgradeCrystal, scrapCrystal,
     getItemDef, getRarityColor, removeItemByIndex
 } from './Inventory.js';
+import { save } from './SaveManager.js';
 import * as Input from './Input.js';
 
 const VISIBLE_ITEMS = 8;
@@ -84,6 +85,7 @@ export class CrystalForgeUI {
                 this._message = `Scrapped for ${dustGain} dust`;
                 this._messageTimer = 1.5;
                 this._selectedIndex = Math.min(this._selectedIndex, Math.max(0, this._getItems().length - 1));
+                save();
             }
         } else {
             const success = upgradeCrystal(crystal.itemId);
@@ -94,6 +96,7 @@ export class CrystalForgeUI {
                 this._message = `Upgraded to ${nextDef ? nextDef.name : 'next tier'}!`;
                 this._messageTimer = 1.5;
                 this._selectedIndex = Math.min(this._selectedIndex, Math.max(0, this._getItems().length - 1));
+                save();
             } else {
                 this._message = 'Upgrade failed!';
                 this._messageTimer = 1.5;

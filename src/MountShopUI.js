@@ -5,6 +5,7 @@ import {
     unequipItem, equipItem, findEmptySlot,
     calculateStats, getItemDef
 } from './Inventory.js';
+import { save } from './SaveManager.js';
 import * as Input from './Input.js';
 
 const ITEM_H = 16;
@@ -73,6 +74,7 @@ export class MountShopUI {
 
         this._message = `Bought ${mountDef.name}!`;
         this._messageTimer = 1.5;
+        save();
     }
 
     render(ctx) {

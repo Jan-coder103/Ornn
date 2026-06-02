@@ -5,6 +5,7 @@ import {
     addItem, removeItemByIndex, getInventoryItems,
     getItemDef, getRarityColor, getMaxSlots, calculateStats
 } from './Inventory.js';
+import { save } from './SaveManager.js';
 import * as Input from './Input.js';
 
 const VISIBLE_ITEMS = 9;
@@ -91,12 +92,14 @@ export class ShopUI {
             playerData.coinsBank -= price;
             this._message = `Bought ${item.name}`;
             this._messageTimer = 1.5;
+            save();
         } else {
             const price = getSellValue(item.itemId);
             removeItemByIndex(item.inventoryIndex, 1);
             playerData.coinsBank += price;
             this._message = `Sold for $${price}`;
             this._messageTimer = 1.5;
+            save();
             const sellItems = this._getSellItems();
             this._selectedIndex = Math.min(this._selectedIndex, Math.max(0, sellItems.length - 1));
             this._adjustScroll();

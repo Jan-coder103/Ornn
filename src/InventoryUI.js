@@ -5,6 +5,7 @@ import {
     getEquippedItem, equipItem, unequipItem, calculateStats,
     getSellValue, socketCrystal
 } from './Inventory.js';
+import { save } from './SaveManager.js';
 import * as Input from './Input.js';
 
 const INV_COLS = 8;
@@ -102,6 +103,7 @@ export class InventoryUI {
                 calculateStats();
                 this._message = 'Equipped ' + def.name;
                 this._messageTimer = 1;
+                save();
             } else {
                 this._message = 'Cannot equip';
                 this._messageTimer = 1;
@@ -123,6 +125,7 @@ export class InventoryUI {
             const def = getItemDef(entry.itemId);
             this._message = 'Unequipped ' + (def ? def.name : entry.itemId);
             this._messageTimer = 1;
+            save();
         } else {
             this._message = 'Inventory full!';
             this._messageTimer = 1;
@@ -143,6 +146,7 @@ export class InventoryUI {
                     calculateStats();
                     this._message = 'Socketed into ' + def.name;
                     this._messageTimer = 1;
+                    save();
                     return;
                 }
             }

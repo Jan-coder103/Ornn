@@ -503,20 +503,20 @@
 
 *Player-facing interfaces and heads-up display.*
 
-**L.1 HUD Hearts**
+✅ **L.1 HUD Hearts**
 
 * Bottom center: draw 3 heart containers.
 * Each heart = 2 HP. Draw full (2 HP), half (1 HP), or empty (0 HP) sprite based on current HP.
 * Update in real-time on damage/heal.
 * **Validation:** Hearts display correct HP, half-hearts work, position stays fixed.
 
-**L.2 HUD Coins**
+✅ **L.2 HUD Coins**
 
 * Top right: coin icon + `coinsBank` amount.
 * Update instantly on pickup/purchase/death.
 * **Validation:** Coin display is accurate and always visible.
 
-**L.3 Inventory Screen**
+✅ **L.3 Inventory Screen**
 
 * Overlay grid (24 slots), gear slots at top (helmet, chest, shoes, ring×2, tome, mount).
 * Click or drag to equip/unequip.
@@ -524,13 +524,13 @@
 * Crystal info displayed on armor hover.
 * **Validation:** Grid renders correctly, equip/unequip works, tooltips show accurate data.
 
-**L.4 Interaction Prompt**
+✅ **L.4 Interaction Prompt**
 
 * When near interactable entity (shop, forge, portal, loot, dungeon entrance): show `[E]` above player.
 * Different prompt text per entity type (e.g., `[E] Enter`, `[E] Shop`, `[E] Pick Up`).
 * **Validation:** Prompt appears at correct range, disappears when out of range.
 
-**L.5 Pause / Main Menu**
+✅ **L.5 Pause / Main Menu**
 
 * ESC opens menu with: Resume, Inventory, Save, Quit.
 * Same UI used as start screen (Main Menu = Pause).

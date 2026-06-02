@@ -7,6 +7,7 @@ import { calculateStats } from '../Inventory.js';
 import { REALM_MULT } from '../CONFIG.js';
 import { PauseUI } from '../PauseUI.js';
 import { InventoryUI } from '../InventoryUI.js';
+import { save } from '../SaveManager.js';
 import * as Input from '../Input.js';
 
 const DUNGEON_MAPS = {
@@ -32,23 +33,6 @@ let dungeonID = 1;
 let scene = null;
 let overlay = null;
 
-function saveGame() {
-    try {
-        const data = {
-            version: 1,
-            coinsBank: playerData.coinsBank,
-            inventory: playerData.inventory,
-            equipped: playerData.equipped,
-            level: playerData.level,
-            xp: playerData.xp,
-            realmUnlocked: playerData.realmUnlocked,
-            currentRealm: playerData.currentRealm,
-            crystalDust: playerData.crystalDust,
-        };
-        localStorage.setItem('ornn_save', JSON.stringify(data));
-    } catch (e) { /* ignore */ }
-}
-
 function createPauseActions() {
     return {
         inventory: () => {
@@ -56,7 +40,7 @@ function createPauseActions() {
                 overlay = new PauseUI(createPauseActions());
             });
         },
-        save: saveGame,
+        save: save,
         quit: () => {
             overlay = null;
             transitionTo(STATES.HUB);
@@ -99,6 +83,7 @@ function loadCurrentRoom() {
         onBossDefeated: () => {
             playerData.justClearedDungeon = true;
             playerData.fromDungeon = true;
+            save();
         },
         onPlayerDeath: () => {
             playerData.coinsBank = Math.floor(playerData.coinsBank * 0.95);
