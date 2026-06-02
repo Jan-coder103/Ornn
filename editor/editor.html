@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ornn Map Editor</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#1a1a2e;--panel:#16213e;--border:#0f3460;--accent:#e94560;--text:#eee;--text-dim:#888;--btn:#0f3460;--btn-hover:#1a4a8a;--success:#4caf50;--warning:#ff9800;--danger:#f44336}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;display:flex;flex-direction:column;height:100vh;overflow:hidden;user-select:none}
+#toolbar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0}
+#toolbar .group{display:flex;align-items:center;gap:4px}
+#toolbar .sep{width:1px;height:22px;background:var(--border);margin:0 4px}
+#toolbar label{font-size:11px;color:var(--text-dim)}
+#toolbar input[type="number"]{width:50px;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:2px 4px;border-radius:3px;font-size:12px}
+button{background:var(--btn);color:var(--text);border:1px solid var(--border);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:12px;white-space:nowrap}
+button:hover{background:var(--btn-hover)}
+button.active{background:var(--accent);border-color:var(--accent)}
+button.danger:hover{background:var(--danger)}
+#main{display:flex;flex:1;overflow:hidden}
+#sidebar-left{width:140px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#sidebar-left h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);padding:8px 8px 4px}
+.tool-btn,.layer-btn{display:flex;align-items:center;gap:6px;width:100%;text-align:left;padding:6px 10px;border:none;border-radius:0;background:transparent;color:var(--text);cursor:pointer;font-size:12px}
+.tool-btn:hover,.layer-btn:hover{background:rgba(255,255,255,0.05)}
+.tool-btn.active,.layer-btn.active{background:var(--accent);color:#fff}
+.tool-btn .icon,.layer-btn .icon{width:16px;text-align:center;font-size:14px}
+#canvas-area{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;background:#0d1117}
+#editor-canvas{image-rendering:pixelated;image-rendering:crisp-edges;cursor:crosshair}
+#sidebar-right{width:200px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#sidebar-right h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);padding:8px 8px 4px}
+#tile-palette{display:flex;flex-wrap:wrap;gap:1px;padding:6px;justify-content:center}
+#tile-palette canvas{image-rendering:pixelated;image-rendering:crisp-edges;cursor:pointer;border:1px solid transparent}
+#tile-palette canvas.selected{border:2px solid var(--accent)}
+#entity-panel{padding:8px;display:none;flex-direction:column;gap:6px}
+#entity-panel.visible{display:flex}
+#entity-panel select,#entity-panel input{background:var(--bg);color:var(--text);border:1px solid var(--border);padding:3px 6px;border-radius:3px;font-size:12px;width:100%}
+#entity-list{flex:1;overflow-y:auto;padding:4px 8px}
+.entity-item{display:flex;align-items:center;justify-content:space-between;padding:4px 6px;border-radius:3px;font-size:11px;cursor:pointer}
+.entity-item:hover{background:rgba(255,255,255,0.05)}
+.entity-item.selected{background:var(--accent);color:#fff}
+.entity-item .del{cursor:pointer;color:var(--danger);font-weight:bold;margin-left:4px}
+.entity-item .del:hover{color:#ff6666}
+#statusbar{display:flex;align-items:center;gap:12px;padding:3px 10px;background:var(--panel);border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);flex-shrink:0}
+#statusbar .highlight{color:var(--accent)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+    <div class="group">
+        <button id="btn-new" class="danger">New</button>
+        <button id="btn-import">Import</button>
+        <button id="btn-export">Export</button>
+        <div class="sep"></div>
+        <label>W:</label>
+        <input type="number" id="map-width" value="20" min="5" max="100">
+        <label>H:</label>
+        <input type="number" id="map-height" value="10" min="5" max="50">
+        <button id="btn-resize">Resize</button>
+        <div class="sep"></div>
+        <button id="btn-zoom-in">+</button>
+        <span id="zoom-label" style="min-width:30px;text-align:center">3x</span>
+        <button id="btn-zoom-out">-</button>
+        <div class="sep"></div>
+        <button id="btn-grid" class="active">Grid</button>
+        <button id="btn-collision-overlay">Collision</button>
+    </div>
+    <div style="flex:1"></div>
+    <div class="group">
+        <button id="btn-undo" title="Ctrl+Z">Undo</button>
+        <button id="btn-redo" title="Ctrl+Y">Redo</button>
+    </div>
+</div>
+
+<div id="main">
+    <div id="sidebar-left">
+        <h3>Tools</h3>
+        <button class="tool-btn active" data-tool="brush"><span class="icon">B</span>Brush</button>
+        <button class="tool-btn" data-tool="erase"><span class="icon">X</span>Eraser</button>
+        <button class="tool-btn" data-tool="fill"><span class="icon">F</span>Fill</button>
+        <button class="tool-btn" data-tool="entity"><span class="icon">E</span>Entity</button>
+        <button class="tool-btn" data-tool="select"><span class="icon">S</span>Select</button>
+
+        <h3>Layers</h3>
+        <button class="layer-btn active" data-layer="background"><span class="icon">BG</span>Background</button>
+        <button class="layer-btn" data-layer="ground"><span class="icon">GD</span>Ground</button>
+        <button class="layer-btn" data-layer="decor"><span class="icon">DC</span>Decor</button>
+        <button class="layer-btn" data-layer="collision"><span class="icon">CL</span>Collision</button>
+
+        <h3>Entities</h3>
+        <div id="entity-list"></div>
+    </div>
+
+    <div id="canvas-area">
+        <canvas id="editor-canvas"></canvas>
+    </div>
+
+    <div id="sidebar-right">
+        <h3 id="palette-title">Tile Palette</h3>
+        <div id="tile-palette"></div>
+        <div id="collision-palette" class="hidden">
+            <div style="padding:8px;display:flex;flex-direction:column;gap:4px">
+                <button class="coll-btn active" data-coll="0">Empty (0)</button>
+                <button class="coll-btn" data-coll="1" style="border-left:4px solid #f44336">Solid (1)</button>
+                <button class="coll-btn" data-coll="2" style="border-left:4px solid #ffeb3b">Platform (2)</button>
+            </div>
+        </div>
+        <div id="entity-panel">
+            <h3>Entity Properties</h3>
+            <label style="font-size:11px;color:var(--text-dim)">Type</label>
+            <select id="entity-type">
+                <option value="player_spawn">Player Spawn</option>
+                <option value="enemy">Enemy</option>
+                <option value="boss">Boss</option>
+                <option value="portal">Portal</option>
+                <option value="npc">NPC</option>
+                <option value="dungeon_entrance">Dungeon Entrance</option>
+            </select>
+            <div id="enemy-type-group" class="hidden">
+                <label style="font-size:11px;color:var(--text-dim)">Enemy Type</label>
+                <select id="enemy-type">
+                    <option value="slime">Slime</option>
+                    <option value="skeleton">Skeleton</option>
+                </select>
+            </div>
+            <div id="portal-target-group" class="hidden">
+                <label style="font-size:11px;color:var(--text-dim)">Target State</label>
+                <input type="text" id="portal-target" value="HUB" placeholder="HUB / OVERWORLD / etc">
+            </div>
+            <div id="npc-type-group" class="hidden">
+                <label style="font-size:11px;color:var(--text-dim)">NPC Type</label>
+                <select id="npc-type">
+                    <option value="shop">Shop</option>
+                    <option value="forge">Crystal Forge</option>
+                    <option value="teleport">Teleport Pad</option>
+                    <option value="mount_shop">Mount Shop</option>
+                </select>
+            </div>
+            <div id="dungeon-id-group" class="hidden">
+                <label style="font-size:11px;color:var(--text-dim)">Dungeon ID</label>
+                <input type="number" id="dungeon-id" value="1" min="1" max="3">
+            </div>
+            <button id="btn-delete-entity" class="danger" style="margin-top:4px">Delete Selected</button>
+        </div>
+    </div>
+</div>
+
+<div id="statusbar">
+    <span>Tile: <span class="highlight" id="status-tile">-</span></span>
+    <span>Layer: <span class="highlight" id="status-layer">background</span></span>
+    <span>Tool: <span class="highlight" id="status-tool">brush</span></span>
+    <span>Map: <span class="highlight" id="status-map">20x10</span></span>
+    <span>Entities: <span class="highlight" id="status-entities">0</span></span>
+</div>
+
+<input type="file" id="file-input" accept=".json" class="hidden">
+
+<script>
+const TILE = 18;
+const SPACING = 1;
+const SHEET_COLS = 20;
+const SHEET_ROWS = 9;
+const LAYER_NAMES = ['background', 'ground', 'decor', 'collision'];
+const ENTITY_COLORS = {
+    player_spawn: '#2196f3',
+    enemy: '#f44336',
+    boss: '#9c27b0',
+    portal: '#4caf50',
+    npc: '#ff9800',
+    dungeon_entrance: '#ff5722'
+};
+const ENTITY_LABELS = {
+    player_spawn: 'P',
+    enemy: 'E',
+    boss: 'B',
+    portal: 'O',
+    npc: 'N',
+    dungeon_entrance: 'D'
+};
+
+let state = {
+    mapWidth: 20,
+    mapHeight: 10,
+    layers: {},
+    entities: [],
+    tool: 'brush',
+    layer: 'background',
+    selectedTile: 1,
+    collisionValue: 1,
+    zoom: 3,
+    showGrid: true,
+    showCollisionOverlay: true,
+    tilesheet: null,
+    selectedEntity: null,
+    draggingEntity: null,
+    dragOffset: null,
+    isPainting: false,
+    undoStack: [],
+    redoStack: [],
+    maxUndo: 50,
+    currentEntityPanelType: null
+};
+
+const canvas = document.getElementById('editor-canvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+function createEmptyLayers(w, h) {
+    const layers = {};
+    for (const name of LAYER_NAMES) {
+        layers[name] = new Array(w * h).fill(0);
+    }
+    return layers;
+}
+
+function resizeMap(newW, newH, keepData) {
+    const oldLayers = state.layers;
+    const oldW = state.mapWidth;
+    const oldH = state.mapHeight;
+    state.mapWidth = newW;
+    state.mapHeight = newH;
+    state.layers = createEmptyLayers(newW, newH);
+
+    if (keepData) {
+        for (const name of LAYER_NAMES) {
+            for (let y = 0; y < Math.min(oldH, newH); y++) {
+                for (let x = 0; x < Math.min(oldW, newW); x++) {
+                    state.layers[name][y * newW + x] = oldLayers[name][y * oldW + x];
+                }
+            }
+        }
+    }
+
+    state.entities = state.entities.filter(e => e.x < newW && e.y < newH);
+
+    updateCanvasSize();
+    updateStatus();
+}
+
+function updateCanvasSize() {
+    const pw = state.mapWidth * TILE * state.zoom;
+    const ph = state.mapHeight * TILE * state.zoom;
+    canvas.width = pw;
+    canvas.height = ph;
+    canvas.style.width = pw + 'px';
+    canvas.style.height = ph + 'px';
+}
+
+function render() {
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    renderLayers();
+    renderEntities();
+
+    if (state.showGrid) renderGrid();
+    if (state.showCollisionOverlay && state.layer !== 'collision') renderCollisionOverlay();
+
+    requestAnimationFrame(render);
+}
+
+function renderLayers() {
+    const z = state.zoom;
+    const tileSize = TILE * z;
+
+    const renderOrder = ['background', 'ground', 'decor'];
+    for (const layerName of renderOrder) {
+        const data = state.layers[layerName];
+        if (!data) continue;
+
+        for (let y = 0; y < state.mapHeight; y++) {
+            for (let x = 0; x < state.mapWidth; x++) {
+                const tileIdx = data[y * state.mapWidth + x];
+                if (tileIdx === 0) continue;
+
+                const dx = x * tileSize;
+                const dy = y * tileSize;
+
+                if (state.tilesheet) {
+                    const sheetIdx = tileIdx - 1;
+                    const srcCol = sheetIdx % SHEET_COLS;
+                    const srcRow = Math.floor(sheetIdx / SHEET_COLS);
+                    const sx = srcCol * (TILE + SPACING);
+                    const sy = srcRow * (TILE + SPACING);
+                    ctx.drawImage(state.tilesheet, sx, sy, TILE, TILE, dx, dy, tileSize, tileSize);
+                } else {
+                    const hue = (tileIdx * 37) % 360;
+                    ctx.fillStyle = `hsl(${hue}, 40%, 30%)`;
+                    ctx.fillRect(dx, dy, tileSize, tileSize);
+                    ctx.fillStyle = `hsl(${hue}, 60%, 60%)`;
+                    ctx.font = `${Math.max(8, tileSize * 0.4)}px monospace`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(tileIdx, dx + tileSize / 2, dy + tileSize / 2);
+                }
+            }
+        }
+    }
+}
+
+function renderCollisionOverlay() {
+    const z = state.zoom;
+    const tileSize = TILE * z;
+    const data = state.layers['collision'];
+    if (!data) return;
+
+    for (let y = 0; y < state.mapHeight; y++) {
+        for (let x = 0; x < state.mapWidth; x++) {
+            const val = data[y * state.mapWidth + x];
+            if (val === 0) continue;
+            const dx = x * tileSize;
+            const dy = y * tileSize;
+            if (val === 1) {
+                ctx.fillStyle = 'rgba(244, 67, 54, 0.25)';
+                ctx.fillRect(dx, dy, tileSize, tileSize);
+            } else if (val === 2) {
+                ctx.fillStyle = 'rgba(255, 235, 59, 0.3)';
+                ctx.fillRect(dx, dy, tileSize, 4 * z);
+            }
+        }
+    }
+}
+
+function renderGrid() {
+    const z = state.zoom;
+    const tileSize = TILE * z;
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+
+    for (let x = 0; x <= state.mapWidth; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * tileSize + 0.5, 0);
+        ctx.lineTo(x * tileSize + 0.5, state.mapHeight * tileSize);
+        ctx.stroke();
+    }
+    for (let y = 0; y <= state.mapHeight; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * tileSize + 0.5);
+        ctx.lineTo(state.mapWidth * tileSize, y * tileSize + 0.5);
+        ctx.stroke();
+    }
+}
+
+function renderEntities() {
+    const z = state.zoom;
+    const tileSize = TILE * z;
+
+    for (const entity of state.entities) {
+        const ex = entity.x * tileSize;
+        const ey = entity.y * tileSize;
+        const color = ENTITY_COLORS[entity.type] || '#fff';
+        const label = ENTITY_LABELS[entity.type] || '?';
+        const isSelected = state.selectedEntity === entity;
+
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.7;
+        const padding = 2 * z;
+        const size = tileSize - padding * 2;
+        ctx.fillRect(ex + padding, ey + padding, size, size);
+        ctx.globalAlpha = 1;
+
+        ctx.strokeStyle = isSelected ? '#fff' : 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = isSelected ? 2 : 1;
+        ctx.strokeRect(ex + padding, ey + padding, size, size);
+
+        ctx.fillStyle = '#fff';
+        ctx.font = `bold ${Math.max(10, tileSize * 0.5)}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, ex + tileSize / 2, ey + tileSize / 2);
+
+        if (entity.type === 'enemy' && entity.enemyType) {
+            ctx.font = `${Math.max(6, tileSize * 0.25)}px monospace`;
+            ctx.fillText(entity.enemyType, ex + tileSize / 2, ey + tileSize - padding);
+        }
+    }
+}
+
+function getTileCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const tileSize = TILE * state.zoom;
+    const col = Math.floor(mx / tileSize);
+    const row = Math.floor(my / tileSize);
+    if (col < 0 || col >= state.mapWidth || row < 0 || row >= state.mapHeight) return null;
+    return { col, row };
+}
+
+function getEntityAt(col, row) {
+    for (let i = state.entities.length - 1; i >= 0; i--) {
+        if (state.entities[i].x === col && state.entities[i].y === row) {
+            return state.entities[i];
+        }
+    }
+    return null;
+}
+
+function saveUndoState() {
+    const snapshot = {
+        layers: {},
+        entities: state.entities.map(e => ({ ...e }))
+    };
+    for (const name of LAYER_NAMES) {
+        snapshot.layers[name] = [...state.layers[name]];
+    }
+    state.undoStack.push(snapshot);
+    if (state.undoStack.length > state.maxUndo) state.undoStack.shift();
+    state.redoStack = [];
+}
+
+function undo() {
+    if (state.undoStack.length === 0) return;
+    const current = {
+        layers: {},
+        entities: state.entities.map(e => ({ ...e }))
+    };
+    for (const name of LAYER_NAMES) {
+        current.layers[name] = [...state.layers[name]];
+    }
+    state.redoStack.push(current);
+
+    const prev = state.undoStack.pop();
+    state.layers = prev.layers;
+    state.entities = prev.entities;
+    state.selectedEntity = null;
+    updateEntityList();
+    updateStatus();
+}
+
+function redo() {
+    if (state.redoStack.length === 0) return;
+    const current = {
+        layers: {},
+        entities: state.entities.map(e => ({ ...e }))
+    };
+    for (const name of LAYER_NAMES) {
+        current.layers[name] = [...state.layers[name]];
+    }
+    state.undoStack.push(current);
+
+    const next = state.redoStack.pop();
+    state.layers = next.layers;
+    state.entities = next.entities;
+    state.selectedEntity = null;
+    updateEntityList();
+    updateStatus();
+}
+
+function setTile(col, row, value) {
+    state.layers[state.layer][row * state.mapWidth + col] = value;
+}
+
+function floodFill(col, row, newValue) {
+    const data = state.layers[state.layer];
+    const idx = row * state.mapWidth + col;
+    const oldValue = data[idx];
+    if (oldValue === newValue) return;
+
+    const stack = [[col, row]];
+    const visited = new Set();
+
+    while (stack.length > 0) {
+        const [cx, cy] = stack.pop();
+        const ci = cy * state.mapWidth + cx;
+        if (cx < 0 || cx >= state.mapWidth || cy < 0 || cy >= state.mapHeight) continue;
+        if (visited.has(ci)) continue;
+        if (data[ci] !== oldValue) continue;
+        visited.add(ci);
+        data[ci] = newValue;
+
+        stack.push([cx - 1, cy]);
+        stack.push([cx + 1, cy]);
+        stack.push([cx, cy - 1]);
+        stack.push([cx, cy + 1]);
+    }
+}
+
+function placeEntity(col, row) {
+    const typeSelect = document.getElementById('entity-type');
+    const entityType = typeSelect.value;
+
+    if (entityType === 'player_spawn') {
+        state.entities = state.entities.filter(e => e.type !== 'player_spawn');
+    }
+
+    const entity = { type: entityType, x: col, y: row };
+
+    if (entityType === 'enemy') {
+        entity.enemyType = document.getElementById('enemy-type').value;
+    } else if (entityType === 'portal') {
+        entity.target = document.getElementById('portal-target').value || 'HUB';
+    } else if (entityType === 'npc') {
+        entity.npcType = document.getElementById('npc-type').value;
+    } else if (entityType === 'dungeon_entrance') {
+        entity.dungeonID = parseInt(document.getElementById('dungeon-id').value) || 1;
+    }
+
+    saveUndoState();
+    const existing = state.entities.findIndex(e => e.x === col && e.y === row);
+    if (existing >= 0) {
+        state.entities[existing] = entity;
+    } else {
+        state.entities.push(entity);
+    }
+
+    state.selectedEntity = entity;
+    updateEntityList();
+    updateEntityPanel();
+    updateStatus();
+}
+
+function deleteEntity(entity) {
+    if (!entity) return;
+    saveUndoState();
+    const idx = state.entities.indexOf(entity);
+    if (idx >= 0) {
+        state.entities.splice(idx, 1);
+    }
+    if (state.selectedEntity === entity) {
+        state.selectedEntity = null;
+    }
+    updateEntityList();
+    updateEntityPanel();
+    updateStatus();
+}
+
+function handleCanvasMouseDown(e) {
+    const coords = getTileCoords(e);
+    if (!coords) return;
+
+    if (state.tool === 'entity') {
+        placeEntity(coords.col, coords.row);
+        return;
+    }
+
+    if (state.tool === 'select') {
+        const entity = getEntityAt(coords.col, coords.row);
+        if (entity) {
+            state.selectedEntity = entity;
+            state.draggingEntity = entity;
+            state.dragOffset = { dx: coords.col - entity.x, dy: coords.row - entity.y };
+            saveUndoState();
+        } else {
+            state.selectedEntity = null;
+        }
+        updateEntityList();
+        updateEntityPanel();
+        return;
+    }
+
+    state.isPainting = true;
+
+    if (state.tool === 'brush') {
+        saveUndoState();
+        const val = state.layer === 'collision' ? state.collisionValue : state.selectedTile;
+        setTile(coords.col, coords.row, val);
+    } else if (state.tool === 'erase') {
+        saveUndoState();
+        setTile(coords.col, coords.row, 0);
+    } else if (state.tool === 'fill') {
+        saveUndoState();
+        const val = state.layer === 'collision' ? state.collisionValue : state.selectedTile;
+        floodFill(coords.col, coords.row, val);
+    }
+}
+
+function handleCanvasMouseMove(e) {
+    const coords = getTileCoords(e);
+    if (coords) {
+        document.getElementById('status-tile').textContent = `${coords.col}, ${coords.row}`;
+    }
+
+    if (state.draggingEntity && coords) {
+        const newX = coords.col - state.dragOffset.dx;
+        const newY = coords.row - state.dragOffset.dy;
+        if (newX >= 0 && newX < state.mapWidth && newY >= 0 && newY < state.mapHeight) {
+            state.draggingEntity.x = newX;
+            state.draggingEntity.y = newY;
+            updateEntityList();
+        }
+        return;
+    }
+
+    if (!state.isPainting || !coords) return;
+
+    if (state.tool === 'brush') {
+        const val = state.layer === 'collision' ? state.collisionValue : state.selectedTile;
+        setTile(coords.col, coords.row, val);
+    } else if (state.tool === 'erase') {
+        setTile(coords.col, coords.row, 0);
+    }
+}
+
+function handleCanvasMouseUp(e) {
+    state.isPainting = false;
+    state.draggingEntity = null;
+    state.dragOffset = null;
+}
+
+function handleCanvasContextMenu(e) {
+    e.preventDefault();
+    const coords = getTileCoords(e);
+    if (!coords) return;
+    const entity = getEntityAt(coords.col, coords.row);
+    if (entity) {
+        deleteEntity(entity);
+    }
+}
+
+canvas.addEventListener('mousedown', handleCanvasMouseDown);
+canvas.addEventListener('mousemove', handleCanvasMouseMove);
+canvas.addEventListener('mouseup', handleCanvasMouseUp);
+canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+canvas.addEventListener('contextmenu', handleCanvasContextMenu);
+
+function selectTool(tool) {
+    state.tool = tool;
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+    document.getElementById('status-tool').textContent = tool;
+    document.getElementById('entity-panel').classList.toggle('visible', tool === 'entity' || tool === 'select');
+    document.getElementById('palette-title').textContent = tool === 'entity' ? 'Entity Config' : 'Tile Palette';
+
+    if (tool === 'entity') {
+        showEntityPanel();
+    } else {
+        hideEntityPanel();
+    }
+
+    canvas.style.cursor = tool === 'select' ? 'pointer' : tool === 'entity' ? 'copy' : 'crosshair';
+}
+
+function selectLayer(layer) {
+    state.layer = layer;
+    document.querySelectorAll('.layer-btn').forEach(b => b.classList.toggle('active', b.dataset.layer === layer));
+    document.getElementById('status-layer').textContent = layer;
+
+    const isCollision = layer === 'collision';
+    document.getElementById('tile-palette').classList.toggle('hidden', isCollision);
+    document.getElementById('collision-palette').classList.toggle('hidden', !isCollision);
+}
+
+function showEntityPanel() {
+    const panel = document.getElementById('entity-panel');
+    panel.classList.add('visible');
+    updateEntityTypeFields();
+}
+
+function hideEntityPanel() {
+    document.getElementById('entity-panel').classList.remove('visible');
+}
+
+function updateEntityTypeFields() {
+    const type = document.getElementById('entity-type').value;
+    document.getElementById('enemy-type-group').classList.toggle('hidden', type !== 'enemy');
+    document.getElementById('portal-target-group').classList.toggle('hidden', type !== 'portal');
+    document.getElementById('npc-type-group').classList.toggle('hidden', type !== 'npc');
+    document.getElementById('dungeon-id-group').classList.toggle('hidden', type !== 'dungeon_entrance');
+    state.currentEntityPanelType = type;
+}
+
+function updateEntityPanel() {
+    const panel = document.getElementById('entity-panel');
+    if (state.selectedEntity) {
+        panel.classList.add('visible');
+        const e = state.selectedEntity;
+        document.getElementById('entity-type').value = e.type;
+        updateEntityTypeFields();
+        if (e.enemyType) document.getElementById('enemy-type').value = e.enemyType;
+        if (e.target) document.getElementById('portal-target').value = e.target;
+        if (e.npcType) document.getElementById('npc-type').value = e.npcType;
+        if (e.dungeonID) document.getElementById('dungeon-id').value = e.dungeonID;
+    }
+}
+
+function updateEntityList() {
+    const list = document.getElementById('entity-list');
+    list.innerHTML = '';
+    for (const entity of state.entities) {
+        const item = document.createElement('div');
+        item.className = 'entity-item' + (state.selectedEntity === entity ? ' selected' : '');
+        let label = entity.type;
+        if (entity.type === 'enemy' && entity.enemyType) label += ` (${entity.enemyType})`;
+        if (entity.type === 'portal' && entity.target) label += ` → ${entity.target}`;
+        if (entity.type === 'npc' && entity.npcType) label += ` (${entity.npcType})`;
+        item.innerHTML = `<span>${label} <span style="color:var(--text-dim)">[${entity.x},${entity.y}]</span></span><span class="del" data-idx="${state.entities.indexOf(entity)}">x</span>`;
+
+        item.addEventListener('click', (ev) => {
+            if (ev.target.classList.contains('del')) {
+                const idx = parseInt(ev.target.dataset.idx);
+                deleteEntity(state.entities[idx]);
+                return;
+            }
+            state.selectedEntity = entity;
+            updateEntityList();
+            updateEntityPanel();
+        });
+        list.appendChild(item);
+    }
+    document.getElementById('status-entities').textContent = state.entities.length;
+}
+
+function updateStatus() {
+    document.getElementById('status-map').textContent = `${state.mapWidth}x${state.mapHeight}`;
+    document.getElementById('status-entities').textContent = state.entities.length;
+}
+
+function buildTilePalette() {
+    const container = document.getElementById('tile-palette');
+    container.innerHTML = '';
+
+    if (!state.tilesheet) {
+        const totalTiles = SHEET_COLS * SHEET_ROWS;
+        const cols = 10;
+        const paletteTileSize = 18;
+
+        for (let i = 0; i < totalTiles; i++) {
+            const tileCanvas = document.createElement('canvas');
+            tileCanvas.width = paletteTileSize;
+            tileCanvas.height = paletteTileSize;
+            const tCtx = tileCanvas.getContext('2d');
+            tCtx.imageSmoothingEnabled = false;
+
+            const hue = ((i + 1) * 37) % 360;
+            tCtx.fillStyle = `hsl(${hue}, 40%, 30%)`;
+            tCtx.fillRect(0, 0, paletteTileSize, paletteTileSize);
+            tCtx.fillStyle = '#fff';
+            tCtx.font = '7px monospace';
+            tCtx.textAlign = 'center';
+            tCtx.textBaseline = 'middle';
+            tCtx.fillText(i + 1, paletteTileSize / 2, paletteTileSize / 2);
+
+            tileCanvas.dataset.tile = i + 1;
+            if (i + 1 === state.selectedTile) tileCanvas.classList.add('selected');
+
+            tileCanvas.addEventListener('click', () => {
+                state.selectedTile = parseInt(tileCanvas.dataset.tile);
+                container.querySelectorAll('canvas').forEach(c => c.classList.remove('selected'));
+                tileCanvas.classList.add('selected');
+            });
+
+            container.appendChild(tileCanvas);
+        }
+        return;
+    }
+
+    const totalTiles = SHEET_COLS * SHEET_ROWS;
+    const paletteTileSize = 18;
+
+    for (let i = 0; i < totalTiles; i++) {
+        const tileCanvas = document.createElement('canvas');
+        tileCanvas.width = paletteTileSize;
+        tileCanvas.height = paletteTileSize;
+        const tCtx = tileCanvas.getContext('2d');
+        tCtx.imageSmoothingEnabled = false;
+
+        const srcCol = i % SHEET_COLS;
+        const srcRow = Math.floor(i / SHEET_COLS);
+        const sx = srcCol * (TILE + SPACING);
+        const sy = srcRow * (TILE + SPACING);
+
+        tCtx.drawImage(state.tilesheet, sx, sy, TILE, TILE, 0, 0, paletteTileSize, paletteTileSize);
+
+        tileCanvas.dataset.tile = i + 1;
+        if (i + 1 === state.selectedTile) tileCanvas.classList.add('selected');
+
+        tileCanvas.addEventListener('click', () => {
+            state.selectedTile = parseInt(tileCanvas.dataset.tile);
+            container.querySelectorAll('canvas').forEach(c => c.classList.remove('selected'));
+            tileCanvas.classList.add('selected');
+        });
+
+        container.appendChild(tileCanvas);
+    }
+}
+
+function loadTilesheet(src) {
+    const img = new Image();
+    img.onload = () => {
+        state.tilesheet = img;
+        buildTilePalette();
+    };
+    img.onerror = () => {
+        state.tilesheet = null;
+        buildTilePalette();
+    };
+    img.src = src;
+}
+
+function newMap() {
+    if (!confirm('Create new map? Unsaved changes will be lost.')) return;
+    const w = parseInt(document.getElementById('map-width').value) || 20;
+    const h = parseInt(document.getElementById('map-height').value) || 10;
+    state.mapWidth = w;
+    state.mapHeight = h;
+    state.layers = createEmptyLayers(w, h);
+    state.entities = [];
+    state.selectedEntity = null;
+    state.undoStack = [];
+    state.redoStack = [];
+    updateCanvasSize();
+    updateEntityList();
+    updateStatus();
+}
+
+function exportMap() {
+    const mapData = {
+        width: state.mapWidth,
+        height: state.mapHeight,
+        layers: LAYER_NAMES.map(name => ({
+            name: name,
+            data: [...state.layers[name]]
+        })),
+        entities: state.entities.map(e => {
+            const entity = { type: e.type, x: e.x, y: e.y };
+            if (e.type === 'enemy') entity.enemyType = e.enemyType || 'slime';
+            if (e.type === 'portal') entity.target = e.target || 'HUB';
+            if (e.type === 'npc') entity.npcType = e.npcType || 'shop';
+            if (e.type === 'dungeon_entrance') entity.dungeonID = e.dungeonID || 1;
+            return entity;
+        })
+    };
+
+    const json = JSON.stringify(mapData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'map.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importMap(jsonData) {
+    try {
+        const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+
+        if (!data.width || !data.height || !data.layers) {
+            throw new Error('Invalid map format');
+        }
+
+        state.mapWidth = data.width;
+        state.mapHeight = data.height;
+        document.getElementById('map-width').value = data.width;
+        document.getElementById('map-height').value = data.height;
+
+        state.layers = createEmptyLayers(data.width, data.height);
+        for (const layer of data.layers) {
+            if (state.layers[layer.name] && layer.data) {
+                state.layers[layer.name] = [...layer.data];
+            }
+        }
+
+        state.entities = (data.entities || []).map(e => ({ ...e }));
+        state.selectedEntity = null;
+        state.undoStack = [];
+        state.redoStack = [];
+
+        updateCanvasSize();
+        updateEntityList();
+        updateStatus();
+    } catch (err) {
+        alert('Failed to import map: ' + err.message);
+    }
+}
+
+document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => selectTool(btn.dataset.tool));
+});
+
+document.querySelectorAll('.layer-btn').forEach(btn => {
+    btn.addEventListener('click', () => selectLayer(btn.dataset.layer));
+});
+
+document.querySelectorAll('.coll-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        state.collisionValue = parseInt(btn.dataset.coll);
+        document.querySelectorAll('.coll-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    });
+});
+
+document.getElementById('entity-type').addEventListener('change', updateEntityTypeFields);
+
+document.getElementById('btn-new').addEventListener('click', newMap);
+
+document.getElementById('btn-export').addEventListener('click', exportMap);
+
+document.getElementById('btn-import').addEventListener('click', () => {
+    const input = document.getElementById('file-input');
+    input.onchange = () => {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => importMap(reader.result);
+        reader.readAsText(file);
+        input.value = '';
+    };
+    input.click();
+});
+
+document.getElementById('btn-resize').addEventListener('click', () => {
+    const newW = parseInt(document.getElementById('map-width').value) || 20;
+    const newH = parseInt(document.getElementById('map-height').value) || 10;
+    if (newW === state.mapWidth && newH === state.mapHeight) return;
+    saveUndoState();
+    resizeMap(newW, newH, true);
+});
+
+document.getElementById('btn-zoom-in').addEventListener('click', () => {
+    state.zoom = Math.min(8, state.zoom + 1);
+    document.getElementById('zoom-label').textContent = state.zoom + 'x';
+    updateCanvasSize();
+});
+
+document.getElementById('btn-zoom-out').addEventListener('click', () => {
+    state.zoom = Math.max(1, state.zoom - 1);
+    document.getElementById('zoom-label').textContent = state.zoom + 'x';
+    updateCanvasSize();
+});
+
+document.getElementById('btn-grid').addEventListener('click', function () {
+    state.showGrid = !state.showGrid;
+    this.classList.toggle('active', state.showGrid);
+});
+
+document.getElementById('btn-collision-overlay').addEventListener('click', function () {
+    state.showCollisionOverlay = !state.showCollisionOverlay;
+    this.classList.toggle('active', state.showCollisionOverlay);
+});
+
+document.getElementById('btn-undo').addEventListener('click', undo);
+document.getElementById('btn-redo').addEventListener('click', redo);
+
+document.getElementById('btn-delete-entity').addEventListener('click', () => {
+    deleteEntity(state.selectedEntity);
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+    else if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+    else if (e.key === 'b') selectTool('brush');
+    else if (e.key === 'x') selectTool('erase');
+    else if (e.key === 'f') selectTool('fill');
+    else if (e.key === 'e' && !e.ctrlKey) selectTool('entity');
+    else if (e.key === 's' && !e.ctrlKey) selectTool('select');
+    else if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (state.selectedEntity) {
+            e.preventDefault();
+            deleteEntity(state.selectedEntity);
+        }
+    }
+    else if (e.key === '1') selectLayer('background');
+    else if (e.key === '2') selectLayer('ground');
+    else if (e.key === '3') selectLayer('decor');
+    else if (e.key === '4') selectLayer('collision');
+    else if (e.key === 'g') {
+        state.showGrid = !state.showGrid;
+        document.getElementById('btn-grid').classList.toggle('active', state.showGrid);
+    }
+});
+
+state.layers = createEmptyLayers(state.mapWidth, state.mapHeight);
+updateCanvasSize();
+updateEntityList();
+updateStatus();
+buildTilePalette();
+
+loadTilesheet('../assets/tiles/tilemap.png');
+
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

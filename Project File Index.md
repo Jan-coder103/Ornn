@@ -128,7 +128,7 @@ All maps use the same schema: `{width, height, layers[{name, data[]}], entities[
 
 ## `editor/` — Map Editor
 
-**`editor/`** — Empty directory. Map editor (separate HTML app) not yet implemented.
+**`editor/editor.html`** — Self-contained map editor HTML app (no external dependencies). Tools: brush, eraser, fill bucket, entity placement, select/move. Supports 4 tile layers (background, ground, decor, collision) and entity types (player_spawn, enemy, boss, portal, npc, dungeon_entrance). Loads `tilemap.png` for tile palette. Import/Export JSON matching the game's `TilemapRenderer` format. Features: grid overlay, collision overlay, undo/redo, zoom, resize map. Keyboard shortcuts: B/X/F/E/S for tools, 1-4 for layers, G for grid, Ctrl+Z/Y for undo/redo.
 
 ---
 
@@ -154,7 +154,5 @@ TilemapRenderer ←── Scene ←── Physics
 
 ## Implementation Status
 
-Phases **A through H** are foundation, loop, rendering, input, physics, player/boomerang, camera/scenes, enemies/bosses. 
-Other phases: **I** (world structure — overworld generation, death handling), **J** (inventory/gear/crystals), **K** (economy/shops/XP), **L** (UI/HUD polish), **M** (save system), **N** (audio/mobile/polish), **O** (map editor), **P** (QA/balance). 
-
+Phases **A through O** are implemented. Phase **P** (QA/balance/DLC) remains.
 The spritesheet/tile images exist but are not yet wired into rendering — maps currently use colored rectangles.

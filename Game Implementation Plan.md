@@ -530,7 +530,7 @@
 * Different prompt text per entity type (e.g., `[E] Enter`, `[E] Shop`, `[E] Pick Up`).
 * **Validation:** Prompt appears at correct range, disappears when out of range.
 
-✅ **L.5 Pause / Main Menu**
+✅**L.5 Pause / Main Menu**
 
 * ESC opens menu with: Resume, Inventory, Save, Quit.
 * Same UI used as start screen (Main Menu = Pause).
@@ -544,18 +544,18 @@
 
 *Auto-save, load, and data integrity.*
 
-**M.1 Save Data Schema**
+✅ **M.1 Save Data Schema**
 
 * JSON structure: `{version: 1, coinsBank, inventory[], equipped{}, level, xp, realmUnlocked, clearedDungeons: {realm1: [], realm2: [], realm3: []}, settings}`.
 * **Validation:** Schema covers all persistent data.
 
-**M.2 Save Triggers**
+✅ **M.2 Save Triggers**
 
 * Auto-save on: entering hub, after shop transaction, after equipping item, after boss kill.
 * **Never save mid-dungeon** (death reloads to last hub save).
 * **Validation:** Save only triggers at safe points, no mid-dungeon save corruption.
 
-**M.3 Load on Boot**
+✅ **M.3 Load on Boot**
 
 * Read from `localStorage` on game boot.
 * If missing or version mismatch: start new game.
@@ -568,7 +568,7 @@
 
 *Sound, touch controls, particles, and game juice.*
 
-**N.1 Sound Manager**
+✅ **N.1 Sound Manager**
 
 * WebAudio API with small WAV/OGG files for: jump, throw, catch, hit, pickup, coin, portal, shop, error.
 * No music (per GDD).
@@ -577,14 +577,14 @@
 * Require user gesture to init AudioContext (browser policy).
 * **Validation:** Sounds trigger correctly, no overlap distortion, works on mobile browsers.
 
-**N.2 Mobile Controls**
+✅ **N.2 Mobile Controls**
 
 * Transparent touch buttons: left/right D-pad, jump, attack, interact.
 * Map to same `Input` abstraction layer so gameplay code is unchanged.
 * Buttons scale with CSS upscaling, don't obstruct game view.
 * **Validation:** Touch controls responsive, no overlap with HUD, gameplay identical to desktop.
 
-**N.3 Particle System**
+✅ **N.3 Particle System**
 
 * Simple particle: `{x, y, vx, vy, life, color, size}`.
 * Uses: hit sparks, loot shine glow, dust on landing, boomerang trail, crystal socket flash, portal swirl.
@@ -592,7 +592,7 @@
 * Use canvas compositing modes (`lighter`, `screen`) for glow effects.
 * **Validation:** Effects enhance feedback, don't drop FPS, clean up properly.
 
-**N.4 Game Juice**
+✅ **N.4 Game Juice**
 
 * Screen shake: 3 frames on boss hit.
 * Freeze frame: 4 frames on enemy kill (hitstop).
@@ -605,38 +605,37 @@
 
 *Dedicated editor for creating dungeon maps.*
 
-**O.1 Editor Canvas**
+✅ **O.1 Editor Canvas**
 
-* `editor.html` with same 360×180 canvas render but with grid overlay.
-* Load tilesheet for painting.
+* `editor.html` with zoomable canvas, grid overlay, tilesheet loading.
 * **Validation:** Editor runs independently, renders tiles and grid correctly.
 
-**O.2 Paint Tools**
+✅ **O.2 Paint Tools**
 
-* Brush for ground/decor layers.
-* Collision layer toggle (red overlay on solid tiles).
-* Eraser tool to clear tiles.
+* Brush for all 4 layers (background, ground, decor, collision).
+* Collision overlay toggle (red=solid, yellow=platform).
+* Eraser tool, fill bucket tool.
 * **Validation:** All tools paint/clear correctly, collision layer visually distinct.
 
-**O.3 Entity Placement**
+✅ **O.3 Entity Placement**
 
-* Place entity types: player spawn, enemy spawn (choose type), boss spawn, portal, dungeon entrance.
+* Place entity types: player spawn, enemy spawn (slime/skeleton), boss spawn, portal, NPC, dungeon entrance.
 * Store as objects with `{x, y, type, properties}`.
-* Select, move, delete placed entities.
+* Select, drag-move, delete entities (right-click or Delete key).
 * **Validation:** Entities place at grid-snapped positions, properties save correctly.
 
-**O.4 Export**
+✅ **O.4 Export**
 
 * Export button generates JSON matching game's `TilemapRenderer` format.
-* Include `layers[]` array and `entities[]` array.
-* File downloads as `.json`.
+* Includes `width`, `height`, `layers[]` array, `entities[]` array.
+* Downloads as `.json` file.
 * **Validation:** Exported JSON loads correctly in the game engine without modification.
 
-**O.5 Import**
+✅ **O.5 Import**
 
 * Load existing JSON back into editor for tweaking.
-* Parse layers and entities, render on canvas.
-* **Validation:** Import/export round-trip preserves all data, used for iterating on the 3 dungeon maps.
+* Parses layers and entities, renders on canvas.
+* **Validation:** Import/export round-trip preserves all data.
 
 ---
 
