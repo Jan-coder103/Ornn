@@ -1,4 +1,5 @@
 import { INTERNAL_W, INTERNAL_H } from './RenderConfig.js';
+import { fillText, fillTextCenter } from './Draw.js';
 import * as Input from './Input.js';
 
 const MENU_ITEMS = [
@@ -54,35 +55,21 @@ export class PauseUI {
         c.fillStyle = 'rgba(0,0,0,0.7)';
         c.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
 
-        c.fillStyle = '#fff';
-        c.font = '8px monospace';
-        c.textAlign = 'center';
-        c.textBaseline = 'middle';
-        c.fillText('PAUSED', INTERNAL_W / 2, 45);
+        fillTextCenter('PAUSED', 41, '#fff');
 
-        const startY = 65;
+        const startY = 57;
         const lineH = 14;
         for (let i = 0; i < MENU_ITEMS.length; i++) {
             const y = startY + i * lineH;
             const selected = i === this._selectedIndex;
-            c.font = '6px monospace';
-            c.textAlign = 'center';
-            c.textBaseline = 'alphabetic';
-            c.fillStyle = selected ? '#ffc107' : '#aaa';
-            c.fillText((selected ? '> ' : '  ') + MENU_ITEMS[i].label, INTERNAL_W / 2, y);
+            fillTextCenter((selected ? '> ' : '  ') + MENU_ITEMS[i].label, y, selected ? '#ffc107' : '#aaa');
         }
 
         if (this._messageTimer > 0 && this._message) {
-            c.font = '5px monospace';
-            c.textAlign = 'center';
-            c.fillStyle = '#4caf50';
-            c.fillText(this._message, INTERNAL_W / 2, startY + MENU_ITEMS.length * lineH + 12);
+            fillTextCenter(this._message, startY + MENU_ITEMS.length * lineH + 8, '#4caf50');
         }
 
-        c.font = '4px monospace';
-        c.textAlign = 'center';
-        c.fillStyle = '#555';
-        c.fillText('Enter: select  Esc: resume', INTERNAL_W / 2, INTERNAL_H - 6);
+        fillTextCenter('Enter: select  Esc: resume', INTERNAL_H - 14, '#555');
 
         c.restore();
     }

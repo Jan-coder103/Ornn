@@ -6,6 +6,7 @@ import {
     calculateStats, getItemDef
 } from './Inventory.js';
 import { save } from './SaveManager.js';
+import { fillText, fillTextCenter } from './Draw.js';
 import * as Input from './Input.js';
 
 const ITEM_H = 16;
@@ -83,37 +84,22 @@ export class MountShopUI {
         ctx.fillStyle = 'rgba(0,0,0,0.85)';
         ctx.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
 
-        ctx.fillStyle = '#8d6e63';
-        ctx.font = '7px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('MOUNT SHOP', INTERNAL_W / 2, 12);
+        fillTextCenter('MOUNT SHOP', 4, '#8d6e63');
 
         const equipped = playerData.equipped.mount;
         if (equipped && equipped.itemId) {
             const def = getItemDef(equipped.itemId);
-            ctx.fillStyle = '#aaa';
-            ctx.font = '4px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText('Equipped: ' + (def ? def.name : equipped.itemId), INTERNAL_W / 2, 19);
+            fillTextCenter('Equipped: ' + (def ? def.name : equipped.itemId), 13, '#aaa');
         }
 
         this._renderMountList(ctx);
 
-        ctx.fillStyle = '#ffc107';
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('$' + playerData.coinsBank, INTERNAL_W - 8, INTERNAL_H - 8);
+        fillText('$' + playerData.coinsBank, INTERNAL_W - 8, INTERNAL_H - 12, '#ffc107');
 
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#888';
-        ctx.font = '4px monospace';
-        ctx.fillText('ENTER: buy & equip  ESC: close', INTERNAL_W / 2, INTERNAL_H - 4);
+        fillTextCenter('ENTER: buy & equip  ESC: close', INTERNAL_H - 12, '#888');
 
         if (this._messageTimer > 0 && this._message) {
-            ctx.fillStyle = '#4caf50';
-            ctx.font = '5px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(this._message, INTERNAL_W / 2, INTERNAL_H - 16);
+            fillTextCenter(this._message, INTERNAL_H - 22, '#4caf50');
         }
 
         ctx.restore();
@@ -133,27 +119,16 @@ export class MountShopUI {
             ctx.fillStyle = mount.color;
             ctx.fillRect(LIST_X + 2, y + 2, 8, 8);
 
-            ctx.font = '5px monospace';
-            ctx.textAlign = 'left';
-            ctx.fillStyle = '#fff';
-            ctx.fillText(mount.name, LIST_X + 14, y + 7);
+            fillText(mount.name, LIST_X + 14, y, '#fff');
 
             const speedMult = mount.stats.mountSpeedMult || 1.0;
-            ctx.fillStyle = '#aaa';
-            ctx.font = '4px monospace';
-            ctx.fillText(speedMult.toFixed(1) + 'x speed', LIST_X + 14, y + 13);
+            fillText(speedMult.toFixed(1) + 'x speed', LIST_X + 14, y + 9, '#aaa');
 
-            ctx.fillStyle = selected ? '#ffc107' : '#aaa';
-            ctx.font = '5px monospace';
-            ctx.textAlign = 'right';
-            ctx.fillText('$' + mount.sellValue, INTERNAL_W - LIST_X - 2, y + 7);
+            fillText('$' + mount.sellValue, INTERNAL_W - LIST_X - 2, y, selected ? '#ffc107' : '#aaa');
         }
 
         if (this._mounts.length === 0) {
-            ctx.fillStyle = '#888';
-            ctx.textAlign = 'center';
-            ctx.font = '5px monospace';
-            ctx.fillText('No mounts available', INTERNAL_W / 2, LIST_Y + 20);
+            fillTextCenter('No mounts available', LIST_Y + 14, '#888');
         }
     }
 

@@ -1,5 +1,6 @@
 import { TILE } from './CONFIG.js';
 import { INTERNAL_W, INTERNAL_H } from './RenderConfig.js';
+import { fillTextCenteredAt } from './Draw.js';
 
 export class Portal {
     constructor(tileX, tileY, target) {
@@ -44,11 +45,6 @@ export class Portal {
     renderPrompt(ctx, cameraX, cameraY) {
         const x = Math.floor(this.x + this.w / 2 - cameraX);
         const y = Math.floor(this.y - 8 - cameraY);
-        ctx.save();
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#fff';
-        ctx.fillText('[E] Enter', x, y);
-        ctx.restore();
+        fillTextCenteredAt('[E] Enter', x, y, '#fff');
     }
 }

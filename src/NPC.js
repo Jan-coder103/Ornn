@@ -1,4 +1,5 @@
 import { TILE } from './CONFIG.js';
+import { fillTextCenteredAt } from './Draw.js';
 
 const NPC_COLORS = {
     shop: { body: '#2e7d32', accent: '#1b5e20', label: 'SHOP' },
@@ -89,15 +90,7 @@ export class NPC {
         const cx = Math.floor(this.x + this.w / 2 - cameraX);
         const py = Math.floor(this.y - 10 - cameraY);
 
-        ctx.save();
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'center';
-
-        ctx.fillStyle = colors.body;
-        ctx.fillText(colors.label, cx, py - 6);
-
-        ctx.fillStyle = '#fff';
-        ctx.fillText('[E]', cx, py);
-        ctx.restore();
+        fillTextCenteredAt(colors.label, cx, py - 14, colors.body);
+        fillTextCenteredAt('[E]', cx, py - 6, '#fff');
     }
 }

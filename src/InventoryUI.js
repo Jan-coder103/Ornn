@@ -6,6 +6,7 @@ import {
     getSellValue, socketCrystal
 } from './Inventory.js';
 import { save } from './SaveManager.js';
+import { fillText, fillTextCenter, fillTextCenteredAt } from './Draw.js';
 import * as Input from './Input.js';
 
 const INV_COLS = 8;
@@ -170,26 +171,16 @@ export class InventoryUI {
     }
 
     _renderHeader(c) {
-        c.font = '7px monospace';
-        c.textAlign = 'center';
-        c.fillStyle = '#fff';
-        c.fillText('INVENTORY', INTERNAL_W / 2, 8);
-
-        c.font = '5px monospace';
-        c.textAlign = 'right';
-        c.fillStyle = '#ffc107';
-        c.fillText('$' + playerData.coinsBank, INTERNAL_W - 4, 8);
+        fillTextCenter('INVENTORY', 2, '#fff');
+        fillText('$' + playerData.coinsBank, INTERNAL_W - 4, 2, '#ffc107');
     }
 
     _renderEquipment(c) {
-        c.font = '4px monospace';
-        c.textAlign = 'left';
-        c.fillStyle = '#888';
-        c.fillText('EQUIPPED', 4, 18);
+        fillText('EQUIPPED', 4, 12, '#888');
 
         const eqTotalW = EQUIP_SLOTS.length * (CELL + GAP) - GAP;
         const eqStartX = Math.floor((INTERNAL_W - eqTotalW) / 2);
-        const eqY = 22;
+        const eqY = 20;
 
         for (let i = 0; i < EQUIP_SLOTS.length; i++) {
             const x = eqStartX + i * (CELL + GAP);
@@ -217,23 +208,17 @@ export class InventoryUI {
                 }
             }
 
-            c.fillStyle = selected ? '#ffc107' : '#666';
-            c.font = '3px monospace';
-            c.textAlign = 'center';
-            c.fillText(EQUIP_SLOTS[i].abbr, x + CELL / 2, eqY + CELL + 4);
+            fillTextCenteredAt(EQUIP_SLOTS[i].abbr, Math.floor(x + CELL / 2), eqY + CELL + 1, selected ? '#ffc107' : '#666');
         }
     }
 
     _renderGrid(c) {
-        const gridLabelY = 40;
-        c.font = '4px monospace';
-        c.textAlign = 'left';
-        c.fillStyle = '#888';
-        c.fillText('ITEMS', 4, gridLabelY);
+        const gridLabelY = 35;
+        fillText('ITEMS', 4, gridLabelY, '#888');
 
         const gridTotalW = INV_COLS * (CELL + GAP) - GAP;
         const gridStartX = Math.floor((INTERNAL_W - gridTotalW) / 2);
-        const gridY = gridLabelY + 4;
+        const gridY = gridLabelY + 10;
 
         for (let i = 0; i < getMaxSlots(); i++) {
             const col = i % INV_COLS;
@@ -257,10 +242,7 @@ export class InventoryUI {
                     c.fillRect(x + 2, y + 2, CELL - 4, CELL - 4);
 
                     if (slot.quantity > 1) {
-                        c.fillStyle = '#fff';
-                        c.font = '3px monospace';
-                        c.textAlign = 'right';
-                        c.fillText('' + slot.quantity, x + CELL - 1, y + CELL - 1);
+                        fillText('' + slot.quantity, x + CELL - 2, y + CELL - 9, '#fff');
                     }
                 }
             }
@@ -268,10 +250,10 @@ export class InventoryUI {
     }
 
     _renderTooltip(c) {
-        const gridLabelY = 40;
-        const gridY = gridLabelY + 4;
+        const gridLabelY = 35;
+        const gridY = gridLabelY + 10;
         const gridH = INV_ROWS * (CELL + GAP) - GAP;
-        const tipY = gridY + gridH + 6;
+        const tipY = gridY + gridH + 2;
 
         let def = null;
         let crystalDef = null;
@@ -292,25 +274,18 @@ export class InventoryUI {
         }
 
         if (!def) {
-            c.fillStyle = '#555';
-            c.font = '4px monospace';
-            c.textAlign = 'center';
-            c.fillText('Empty slot', INTERNAL_W / 2, tipY + 6);
+            fillTextCenter('Empty slot', tipY, '#555');
             return;
         }
 
         let y = tipY;
 
-        c.fillStyle = getRarityColor(def.rarity);
-        c.font = '5px monospace';
-        c.textAlign = 'center';
-        c.fillText(def.name, INTERNAL_W / 2, y + 5);
-        y += 8;
+        fillTextCenter(def.name, y, getRarityColor(def.rarity));
+        y += 10;
 
-        c.fillStyle = '#888';
-        c.font = '4px monospace';
-        c.fillText(def.type.toUpperCase() + (def.rarity ? ' \u00b7 ' + def.rarity.toUpperCase() : ''), INTERNAL_W / 2, y + 4);
-        y += 7;
+        const typeText = def.type.toUpperCase() + (def.rarity ? ' \u00b7 ' + def.rarity.toUpperCase() : '');
+        fillTextCenter(typeText, y, '#888');
+        y += 10;
 
         const stats = def.stats || {};
         let statParts = [];
@@ -319,42 +294,33 @@ export class InventoryUI {
         if (stats.speedBonus) statParts.push('SPD+' + stats.speedBonus.toFixed(2));
         if (stats.mountSpeedMult) statParts.push('x' + stats.mountSpeedMult + ' SPD');
 
-        c.fillStyle = '#ccc';
-        c.fillText(statParts.join('  ') || 'No bonuses', INTERNAL_W / 2, y + 4);
-        y += 7;
+        fillTextCenter(statParts.join('  ') || 'No bonuses', y, '#ccc');
+        y += 10;
 
         if (this._section === 'inventory' && def.type !== 'crystal' && def.type !== 'tool') {
             this._renderStatComparison(c, def, y);
-            y += 7;
+            y += 10;
         }
 
         if (crystalDef) {
-            c.fillStyle = crystalDef.color;
-            c.font = '4px monospace';
             const cStats = crystalDef.stats || {};
             let cParts = [];
             if (cStats.hpBonus) cParts.push('HP+' + cStats.hpBonus);
             if (cStats.damageBonus) cParts.push('DMG+' + cStats.damageBonus);
             if (cStats.speedBonus) cParts.push('SPD+' + cStats.speedBonus.toFixed(2));
-            c.fillText('Crystal: ' + crystalDef.name + ' (' + cParts.join(', ') + ')', INTERNAL_W / 2, y + 4);
-            y += 7;
+            fillTextCenter('Crystal: ' + crystalDef.name + ' (' + cParts.join(', ') + ')', y, crystalDef.color);
+            y += 10;
         } else if (def.crystalSlots > 0) {
-            c.fillStyle = '#555';
-            c.font = '4px monospace';
-            c.fillText('Crystal slot: empty', INTERNAL_W / 2, y + 4);
-            y += 7;
+            fillTextCenter('Crystal slot: empty', y, '#555');
+            y += 10;
         }
 
         if (quantity > 1) {
-            c.fillStyle = '#888';
-            c.font = '4px monospace';
-            c.fillText('Quantity: ' + quantity, INTERNAL_W / 2, y + 4);
-            y += 7;
+            fillTextCenter('Quantity: ' + quantity, y, '#888');
+            y += 10;
         }
 
-        c.fillStyle = '#888';
-        c.font = '4px monospace';
-        c.fillText('Sell: $' + getSellValue(def.id), INTERNAL_W / 2, y + 4);
+        fillTextCenter('Sell: $' + getSellValue(def.id), y, '#888');
     }
 
     _renderStatComparison(c, def, y) {
@@ -377,32 +343,20 @@ export class InventoryUI {
         if (diffDmg !== 0) parts.push((diffDmg > 0 ? '+' : '') + diffDmg + ' DMG');
         if (diffSpd !== 0) parts.push((diffSpd > 0 ? '+' : '') + diffSpd.toFixed(2) + ' SPD');
 
-        c.font = '4px monospace';
-        c.textAlign = 'center';
-
         if (parts.length > 0) {
-            const hasPositive = diffHp > 0 || diffDmg > 0 || diffSpd > 0;
             const hasNegative = diffHp < 0 || diffDmg < 0 || diffSpd < 0;
-            c.fillStyle = hasNegative ? '#f44336' : '#4caf50';
-            c.fillText('vs equipped: ' + parts.join('  '), INTERNAL_W / 2, y + 4);
+            fillTextCenter('vs equipped: ' + parts.join('  '), y, hasNegative ? '#f44336' : '#4caf50');
         } else {
-            c.fillStyle = '#666';
-            c.fillText('Same stats as equipped', INTERNAL_W / 2, y + 4);
+            fillTextCenter('Same stats as equipped', y, '#666');
         }
     }
 
     _renderFooter(c) {
         if (this._messageTimer > 0 && this._message) {
-            c.fillStyle = '#4caf50';
-            c.font = '5px monospace';
-            c.textAlign = 'center';
-            c.fillText(this._message, INTERNAL_W / 2, INTERNAL_H - 12);
+            fillTextCenter(this._message, INTERNAL_H - 20, '#4caf50');
         }
 
-        c.font = '4px monospace';
-        c.textAlign = 'center';
-        c.fillStyle = '#555';
-        c.fillText('Tab: switch  E: equip/socket  U: unequip  ESC: close', INTERNAL_W / 2, INTERNAL_H - 3);
+        fillTextCenter('Tab: switch  E: equip/socket  U: unequip  ESC: close', INTERNAL_H - 11, '#555');
     }
 
     isClosed() { return this._closed; }

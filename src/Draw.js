@@ -1,4 +1,4 @@
-import { ctx } from './RenderConfig.js';
+import { ctx, INTERNAL_W } from './RenderConfig.js';
 
 export function drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh, flipX) {
     dx = Math.floor(dx);
@@ -29,6 +29,25 @@ export function fillRect(x, y, w, h, color) {
 
 export function fillText(text, x, y, color, font) {
     ctx.fillStyle = color;
-    ctx.font = font || '6px monospace';
+    ctx.font = font || '8px "Kenney Mini"';
+    ctx.textBaseline = 'top';
     ctx.fillText(text, Math.floor(x), Math.floor(y));
+}
+
+export function fillTextCenter(text, y, color, font) {
+    ctx.fillStyle = color;
+    ctx.font = font || '8px "Kenney Mini"';
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    const w = ctx.measureText(text).width;
+    ctx.fillText(text, Math.floor((INTERNAL_W - w) / 2), Math.floor(y));
+}
+
+export function fillTextCenteredAt(text, anchorX, y, color, font) {
+    ctx.fillStyle = color;
+    ctx.font = font || '8px "Kenney Mini"';
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    const w = ctx.measureText(text).width;
+    ctx.fillText(text, Math.floor(anchorX - w / 2), Math.floor(y));
 }

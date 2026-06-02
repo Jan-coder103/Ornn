@@ -8,6 +8,7 @@ import { REALM_MULT } from '../CONFIG.js';
 import { PauseUI } from '../PauseUI.js';
 import { InventoryUI } from '../InventoryUI.js';
 import { save } from '../SaveManager.js';
+import { fillTextCenter } from '../Draw.js';
 import * as Input from '../Input.js';
 
 let scene = null;
@@ -139,12 +140,7 @@ export default {
         if (overlay) overlay.render(c);
 
         if (playerData.inventoryMessageTimer > 0 && playerData.inventoryMessage) {
-            c.save();
-            c.font = '5px monospace';
-            c.textAlign = 'center';
-            c.fillStyle = '#4caf50';
-            c.fillText(playerData.inventoryMessage, INTERNAL_W / 2, 30);
-            c.restore();
+            fillTextCenter(playerData.inventoryMessage, 24, '#4caf50');
         }
     },
     getDebugInfo() {

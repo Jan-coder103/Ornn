@@ -1,4 +1,5 @@
 import { TILE } from './CONFIG.js';
+import { fillTextCenteredAt } from './Draw.js';
 
 export class DungeonEntrance {
     constructor(tileX, tileY, dungeonID, index) {
@@ -61,11 +62,6 @@ export class DungeonEntrance {
         if (this.cleared) return;
         const x = Math.floor(this.x + this.w / 2 - cameraX);
         const y = Math.floor(this.y - 8 - cameraY);
-        ctx.save();
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#fff';
-        ctx.fillText('[E] Enter', x, y);
-        ctx.restore();
+        fillTextCenteredAt('[E] Enter', x, y, '#fff');
     }
 }

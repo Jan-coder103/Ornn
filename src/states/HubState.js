@@ -11,6 +11,7 @@ import { TeleportUI } from '../TeleportUI.js';
 import { PauseUI } from '../PauseUI.js';
 import { InventoryUI } from '../InventoryUI.js';
 import { save } from '../SaveManager.js';
+import { fillTextCenter } from '../Draw.js';
 import * as Input from '../Input.js';
 
 let scene = null;
@@ -136,28 +137,13 @@ export default {
         }
 
         if (playerData.deathMessageTimer > 0 && playerData.deathMessage) {
-            c.save();
-            c.font = '6px monospace';
-            c.textAlign = 'center';
-            c.fillStyle = '#f44336';
-            c.fillText(playerData.deathMessage, INTERNAL_W / 2, 20);
-            c.restore();
+            fillTextCenter(playerData.deathMessage, 14, '#f44336');
         }
         if (playerData.inventoryMessageTimer > 0 && playerData.inventoryMessage) {
-            c.save();
-            c.font = '5px monospace';
-            c.textAlign = 'center';
-            c.fillStyle = '#4caf50';
-            c.fillText(playerData.inventoryMessage, INTERNAL_W / 2, 30);
-            c.restore();
+            fillTextCenter(playerData.inventoryMessage, 24, '#4caf50');
         }
         if (playerData.hubMessageTimer > 0 && playerData.hubMessage) {
-            c.save();
-            c.font = '5px monospace';
-            c.textAlign = 'center';
-            c.fillStyle = '#ffc107';
-            c.fillText(playerData.hubMessage, INTERNAL_W / 2, 40);
-            c.restore();
+            fillTextCenter(playerData.hubMessage, 34, '#ffc107');
         }
     },
     getDebugInfo() {

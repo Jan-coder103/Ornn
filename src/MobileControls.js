@@ -24,7 +24,7 @@ function createButton(id, label, x, y, w, h, handlers) {
         border: 1px solid rgba(255, 255, 255, 0.3);
         color: rgba(255, 255, 255, 0.6);
         font-size: 14px;
-        font-family: monospace;
+        font-family: "Kenney Mini", monospace;
         user-select: none;
         -webkit-user-select: none;
         touch-action: none;
@@ -83,7 +83,7 @@ function createDpad() {
         justify-content: center;
         color: rgba(255, 255, 255, 0.5);
         font-size: 18px;
-        font-family: monospace;
+        font-family: "Kenney Mini", monospace;
         user-select: none;
         -webkit-user-select: none;
         touch-action: none;
@@ -117,7 +117,7 @@ function createDpad() {
         justify-content: center;
         color: rgba(255, 255, 255, 0.5);
         font-size: 18px;
-        font-family: monospace;
+        font-family: "Kenney Mini", monospace;
         user-select: none;
         -webkit-user-select: none;
         touch-action: none;

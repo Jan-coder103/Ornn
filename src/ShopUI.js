@@ -6,6 +6,7 @@ import {
     getItemDef, getRarityColor, getMaxSlots, calculateStats
 } from './Inventory.js';
 import { save } from './SaveManager.js';
+import { fillText, fillTextCenter } from './Draw.js';
 import * as Input from './Input.js';
 
 const VISIBLE_ITEMS = 9;
@@ -112,40 +113,24 @@ export class ShopUI {
         ctx.fillStyle = 'rgba(0,0,0,0.85)';
         ctx.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
 
-        ctx.fillStyle = '#fff';
-        ctx.font = '7px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('SHOP', INTERNAL_W / 2, 12);
+        fillTextCenter('SHOP', 4, '#fff');
 
-        const tabY = 20;
+        const tabY = 15;
         const buyX = INTERNAL_W / 2 - 30;
         const sellX = INTERNAL_W / 2 + 10;
 
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillStyle = this._tab === 'buy' ? '#ffc107' : '#888';
-        ctx.fillText('[B] Buy', buyX, tabY);
-        ctx.fillStyle = this._tab === 'sell' ? '#ffc107' : '#888';
-        ctx.fillText('[S] Sell', sellX, tabY);
+        fillText('[B] Buy', buyX, tabY, this._tab === 'buy' ? '#ffc107' : '#888');
+        fillText('[S] Sell', sellX, tabY, this._tab === 'sell' ? '#ffc107' : '#888');
 
         const items = this._tab === 'buy' ? this._buyItems : this._getSellItems();
         this._renderItemList(ctx, items);
 
-        ctx.fillStyle = '#ffc107';
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('$' + playerData.coinsBank, INTERNAL_W - 8, INTERNAL_H - 8);
+        fillText('$' + playerData.coinsBank, INTERNAL_W - 8, INTERNAL_H - 12, '#ffc107');
 
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#888';
-        ctx.font = '4px monospace';
-        ctx.fillText('TAB: switch  ENTER: select  ESC: close', INTERNAL_W / 2, INTERNAL_H - 4);
+        fillTextCenter('TAB: switch  ENTER: select  ESC: close', INTERNAL_H - 12, '#888');
 
         if (this._messageTimer > 0 && this._message) {
-            ctx.fillStyle = '#4caf50';
-            ctx.font = '5px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(this._message, INTERNAL_W / 2, INTERNAL_H - 16);
+            fillTextCenter(this._message, INTERNAL_H - 22, '#4caf50');
         }
 
         ctx.restore();
@@ -165,36 +150,23 @@ export class ShopUI {
                 ctx.fillRect(LIST_X - 2, y - 1, INTERNAL_W - LIST_X * 2 + 4, ITEM_H - 1);
             }
 
-            ctx.font = '5px monospace';
-            ctx.textAlign = 'left';
-
             if (this._tab === 'buy') {
                 const def = item;
-                ctx.fillStyle = getRarityColor(def.rarity);
-                ctx.fillText(def.name, LIST_X + 2, y + 6);
-
-                ctx.fillStyle = selected ? '#ffc107' : '#aaa';
-                ctx.textAlign = 'right';
-                ctx.fillText('$' + def.sellValue, INTERNAL_W - LIST_X - 2, y + 6);
+                fillText(def.name, LIST_X + 2, y, getRarityColor(def.rarity));
+                fillText('$' + def.sellValue, INTERNAL_W - LIST_X - 2, y, selected ? '#ffc107' : '#aaa');
             } else {
                 const def = getItemDef(item.itemId);
                 const name = def ? def.name : item.itemId;
                 const qty = item.quantity > 1 ? ` x${item.quantity}` : '';
-                ctx.fillStyle = def ? getRarityColor(def.rarity) : '#fff';
-                ctx.fillText(name + qty, LIST_X + 2, y + 6);
+                fillText(name + qty, LIST_X + 2, y, def ? getRarityColor(def.rarity) : '#fff');
 
                 const sellPrice = getSellValue(item.itemId);
-                ctx.fillStyle = selected ? '#ffc107' : '#aaa';
-                ctx.textAlign = 'right';
-                ctx.fillText('$' + sellPrice, INTERNAL_W - LIST_X - 2, y + 6);
+                fillText('$' + sellPrice, INTERNAL_W - LIST_X - 2, y, selected ? '#ffc107' : '#aaa');
             }
         }
 
         if (items.length === 0) {
-            ctx.fillStyle = '#888';
-            ctx.textAlign = 'center';
-            ctx.font = '5px monospace';
-            ctx.fillText(this._tab === 'buy' ? 'No items available' : 'Inventory empty', INTERNAL_W / 2, LIST_Y + 20);
+            fillTextCenter(this._tab === 'buy' ? 'No items available' : 'Inventory empty', LIST_Y + 14, '#888');
         }
     }
 

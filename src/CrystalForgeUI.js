@@ -5,6 +5,7 @@ import {
     getItemDef, getRarityColor, removeItemByIndex
 } from './Inventory.js';
 import { save } from './SaveManager.js';
+import { fillText, fillTextCenter } from './Draw.js';
 import * as Input from './Input.js';
 
 const VISIBLE_ITEMS = 8;
@@ -110,40 +111,22 @@ export class CrystalForgeUI {
         ctx.fillStyle = 'rgba(0,0,0,0.85)';
         ctx.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
 
-        ctx.fillStyle = '#e65100';
-        ctx.font = '7px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('CRYSTAL FORGE', INTERNAL_W / 2, 12);
+        fillTextCenter('CRYSTAL FORGE', 4, '#e65100');
 
-        const tabY = 22;
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillStyle = this._tab === 'scrap' ? '#ffc107' : '#888';
-        ctx.fillText('[1] Scrap', LIST_X, tabY);
-        ctx.fillStyle = this._tab === 'upgrade' ? '#ffc107' : '#888';
-        ctx.fillText('[2] Upgrade', LIST_X + 70, tabY);
+        const tabY = 14;
+        fillText('[1] Scrap', LIST_X, tabY, this._tab === 'scrap' ? '#ffc107' : '#888');
+        fillText('[2] Upgrade', LIST_X + 70, tabY, this._tab === 'upgrade' ? '#ffc107' : '#888');
 
         const items = this._getItems();
         this._renderItemList(ctx, items);
 
-        ctx.fillStyle = '#ab47bc';
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText('Dust: ' + playerData.crystalDust, INTERNAL_W - 8, INTERNAL_H - 16);
+        fillText('Dust: ' + playerData.crystalDust, INTERNAL_W - 8, INTERNAL_H - 24, '#ab47bc');
+        fillText('$' + playerData.coinsBank, INTERNAL_W - 8, INTERNAL_H - 12, '#ffc107');
 
-        ctx.fillStyle = '#ffc107';
-        ctx.fillText('$' + playerData.coinsBank, INTERNAL_W - 8, INTERNAL_H - 8);
-
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#888';
-        ctx.font = '4px monospace';
-        ctx.fillText('TAB: switch  ENTER: confirm  ESC: close', INTERNAL_W / 2, INTERNAL_H - 4);
+        fillTextCenter('TAB: switch  ENTER: confirm  ESC: close', INTERNAL_H - 12, '#888');
 
         if (this._messageTimer > 0 && this._message) {
-            ctx.fillStyle = '#4caf50';
-            ctx.font = '5px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(this._message, INTERNAL_W / 2, INTERNAL_H - 24);
+            fillTextCenter(this._message, INTERNAL_H - 32, '#4caf50');
         }
 
         ctx.restore();
@@ -163,33 +146,23 @@ export class CrystalForgeUI {
                 ctx.fillRect(LIST_X - 2, y - 1, INTERNAL_W - LIST_X * 2 + 4, ITEM_H - 1);
             }
 
-            ctx.font = '5px monospace';
-            ctx.textAlign = 'left';
-
             const def = crystal.def;
-            ctx.fillStyle = getRarityColor(def.rarity);
-            ctx.fillText(`${def.name} x${crystal.totalQty}`, LIST_X + 2, y + 6);
+            fillText(`${def.name} x${crystal.totalQty}`, LIST_X + 2, y, getRarityColor(def.rarity));
 
-            ctx.textAlign = 'right';
             if (this._tab === 'scrap') {
-                ctx.fillStyle = '#aaa';
-                ctx.fillText('+' + (def.tier * 5) + ' dust', INTERNAL_W - LIST_X - 2, y + 6);
+                fillText('+' + (def.tier * 5) + ' dust', INTERNAL_W - LIST_X - 2, y, '#aaa');
             } else {
                 const nextTier = def.tier + 1;
                 const nextDef = getItemDef(`crystal_${def.subtype}_${nextTier}`);
-                ctx.fillStyle = nextDef ? getRarityColor(nextDef.rarity) : '#aaa';
-                ctx.fillText('-> ' + (nextDef ? nextDef.name : '?'), INTERNAL_W - LIST_X - 2, y + 6);
+                fillText('-> ' + (nextDef ? nextDef.name : '?'), INTERNAL_W - LIST_X - 2, y, nextDef ? getRarityColor(nextDef.rarity) : '#aaa');
             }
         }
 
         if (items.length === 0) {
-            ctx.fillStyle = '#888';
-            ctx.textAlign = 'center';
-            ctx.font = '5px monospace';
             if (this._tab === 'scrap') {
-                ctx.fillText('No crystals to scrap', INTERNAL_W / 2, LIST_Y + 20);
+                fillTextCenter('No crystals to scrap', LIST_Y + 14, '#888');
             } else {
-                ctx.fillText('Need 3 of same crystal to upgrade', INTERNAL_W / 2, LIST_Y + 20);
+                fillTextCenter('Need 3 of same crystal to upgrade', LIST_Y + 14, '#888');
             }
         }
     }

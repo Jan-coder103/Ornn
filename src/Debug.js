@@ -30,7 +30,7 @@ export function renderDebug(data) {
     ];
 
     ctx.save();
-    ctx.font = '6px monospace';
+    ctx.font = '8px "Kenney Mini"';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
 

@@ -2,6 +2,7 @@ import { INTERNAL_W, INTERNAL_H } from './RenderConfig.js';
 import { playerData } from './GameData.js';
 import { isRealmUnlocked, getXPProgress } from './XPSystem.js';
 import { REALM2_LEVEL, REALM3_LEVEL } from './CONFIG.js';
+import { fillText, fillTextCenter } from './Draw.js';
 import * as Input from './Input.js';
 
 const REALM_NAMES = {
@@ -56,12 +57,9 @@ export class TeleportUI {
         ctx.fillStyle = 'rgba(0,0,0,0.85)';
         ctx.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
 
-        ctx.fillStyle = '#7b1fa2';
-        ctx.font = '7px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('TELEPORT', INTERNAL_W / 2, 12);
+        fillTextCenter('TELEPORT', 4, '#7b1fa2');
 
-        const startY = 30;
+        const startY = 22;
         const itemH = 22;
 
         for (let i = 0; i < MAX_REALMS; i++) {
@@ -79,36 +77,22 @@ export class TeleportUI {
             ctx.fillStyle = REALM_COLORS[realm];
             ctx.fillRect(24, y + 2, 6, 6);
 
-            ctx.font = '6px monospace';
-            ctx.textAlign = 'left';
-
             if (unlocked) {
-                ctx.fillStyle = selected ? '#fff' : '#ccc';
-                ctx.fillText(`Realm ${realm}: ${REALM_NAMES[realm]}`, 34, y + 8);
-
+                fillText(`Realm ${realm}: ${REALM_NAMES[realm]}`, 34, y, selected ? '#fff' : '#ccc');
                 if (isCurrent) {
-                    ctx.fillStyle = '#ffc107';
-                    ctx.font = '4px monospace';
-                    ctx.fillText('(current)', 34, y + 15);
+                    fillText('(current)', 34, y + 9, '#ffc107');
                 }
             } else {
-                ctx.fillStyle = '#666';
-                ctx.fillText(`Realm ${realm}: ${REALM_NAMES[realm]}`, 34, y + 8);
-
-                ctx.fillStyle = '#f44336';
-                ctx.font = '4px monospace';
+                fillText(`Realm ${realm}: ${REALM_NAMES[realm]}`, 34, y, '#666');
                 let reqText = '';
                 if (realm === 2) reqText = `Requires Lv.${REALM2_LEVEL}`;
                 if (realm === 3) reqText = `Requires Lv.${REALM3_LEVEL}`;
-                ctx.fillText(reqText, 34, y + 15);
+                fillText(reqText, 34, y + 9, '#f44336');
             }
         }
 
         const xp = getXPProgress();
-        ctx.fillStyle = '#aaa';
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText(`Lv.${playerData.level}`, 20, INTERNAL_H - 28);
+        fillText(`Lv.${playerData.level}`, 20, INTERNAL_H - 34, '#aaa');
 
         const barX = 50;
         const barY = INTERNAL_H - 32;
@@ -118,14 +102,9 @@ export class TeleportUI {
         ctx.fillRect(barX, barY, barW, barH);
         ctx.fillStyle = '#2196f3';
         ctx.fillRect(barX, barY, Math.floor(barW * xp.fraction), barH);
-        ctx.fillStyle = '#aaa';
-        ctx.font = '4px monospace';
-        ctx.fillText(`${xp.current}/${xp.needed}`, barX + barW + 4, barY + 4);
+        fillText(`${xp.current}/${xp.needed}`, barX + barW + 4, barY, '#aaa');
 
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#888';
-        ctx.font = '4px monospace';
-        ctx.fillText('ENTER: teleport  ESC: close', INTERNAL_W / 2, INTERNAL_H - 4);
+        fillTextCenter('ENTER: teleport  ESC: close', INTERNAL_H - 12, '#888');
 
         ctx.restore();
     }

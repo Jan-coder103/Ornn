@@ -1,4 +1,5 @@
 import { TILE } from './CONFIG.js';
+import { fillTextCenteredAt } from './Draw.js';
 
 export class Door {
     constructor(tileX, tileY) {
@@ -45,11 +46,6 @@ export class Door {
     renderPrompt(ctx, cameraX, cameraY) {
         const x = Math.floor(this.x + this.w / 2 - cameraX);
         const y = Math.floor(this.y - 8 - cameraY);
-        ctx.save();
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#fff';
-        ctx.fillText('[E] Open', x, y);
-        ctx.restore();
+        fillTextCenteredAt('[E] Open', x, y, '#fff');
     }
 }

@@ -60,7 +60,7 @@ setCallbacks(
         const shake = GameJuice.getShakeOffset();
         if (shake.x !== 0 || shake.y !== 0) {
             ctx.save();
-            ctx.translate(shake.x, shake.y);
+            ctx.translate(Math.round(shake.x), Math.round(shake.y));
         }
 
         renderState(alpha);
@@ -74,10 +74,22 @@ setCallbacks(
     }
 );
 
-loader.loadManifest('manifest.json').then(() => {
+async function boot() {
+    try {
+        await loader.loadManifest('manifest.json');
+    } catch (err) {
+        console.error('Failed to load assets:', err);
+    }
+
+    try {
+        await document.fonts.load('8px "Kenney Mini"');
+    } catch (err) {
+        console.warn('Font preload failed, will use fallback:', err);
+    }
+
     initMobileControls();
     changeState(STATES.BOOT);
     start();
-}).catch(err => {
-    console.error('Failed to load assets:', err);
-});
+}
+
+boot();

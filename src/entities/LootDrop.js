@@ -1,5 +1,6 @@
 import { TILE } from '../CONFIG.js';
 import { getItemDef, getRarityColor } from '../Inventory.js';
+import { fillTextCenteredAt } from '../Draw.js';
 
 export class LootDrop {
     constructor(x, y, itemId) {
@@ -74,17 +75,13 @@ export class LootDrop {
         const x = Math.floor(this.x + this.w / 2 - cameraX);
         const y = Math.floor(this.y - 10 - cameraY);
 
-        ctx.save();
-        ctx.font = '5px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#fff';
-        ctx.fillText('[E] Pick Up', x, y);
+        fillTextCenteredAt('[E] Pick Up', x, y, '#fff');
 
-        if (def) {
-            ctx.font = '4px monospace';
-            ctx.fillStyle = getRarityColor(def.rarity);
-            ctx.fillText(def.name, x, y - 6);
+        if (this.active && this.def) {
+            const itemDef = getItemDef(this.def);
+            if (itemDef) {
+                fillTextCenteredAt(itemDef.name, x, y - 8, getRarityColor(itemDef.rarity));
+            }
         }
-        ctx.restore();
     }
 }

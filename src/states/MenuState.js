@@ -5,6 +5,7 @@ import { wasKeyPressed as wasPressed } from '../Input.js';
 import { hasSave, load, applySaveData, deleteSave } from '../SaveManager.js';
 import { resetPlayerData } from '../GameData.js';
 import * as Audio from '../AudioManager.js';
+import { fillText, fillTextCenter } from '../Draw.js';
 
 const MENU_CONTINUE = [
     { label: 'Continue', key: 'continue' },
@@ -61,27 +62,16 @@ export default {
         c.fillStyle = '#111';
         c.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
 
-        c.fillStyle = '#fff';
-        c.font = '10px monospace';
-        c.textAlign = 'center';
-        c.textBaseline = 'middle';
-        c.fillText('ORNN', INTERNAL_W / 2, INTERNAL_H / 2 - 30);
+        fillTextCenter('ORNN', INTERNAL_H / 2 - 30 - 8, '#fff', '16px "Kenney Mini"');
 
-        const startY = INTERNAL_H / 2;
+        const startY = INTERNAL_H / 2 - 8;
         const lineH = 14;
         for (let i = 0; i < menuItems.length; i++) {
             const y = startY + i * lineH;
             const selected = i === selectedIndex;
-            c.font = '6px monospace';
-            c.textAlign = 'center';
-            c.textBaseline = 'alphabetic';
-            c.fillStyle = selected ? '#ffc107' : '#aaa';
-            c.fillText((selected ? '> ' : '  ') + menuItems[i].label, INTERNAL_W / 2, y);
+            fillTextCenter((selected ? '> ' : '  ') + menuItems[i].label, y, selected ? '#ffc107' : '#aaa');
         }
 
-        c.font = '4px monospace';
-        c.fillStyle = '#555';
-        c.textAlign = 'center';
-        c.fillText('Enter: select  Up/Down: navigate', INTERNAL_W / 2, INTERNAL_H - 6);
+        fillTextCenter('Enter: select  Up/Down: navigate', INTERNAL_H - 14, '#555');
     },
 };

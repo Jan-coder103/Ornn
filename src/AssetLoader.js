@@ -79,7 +79,10 @@ export function drawProgressBar(loaded, total) {
     ctx.fillRect(x, y, Math.floor(barW * progress), barH);
 
     ctx.fillStyle = '#fff';
-    ctx.font = '6px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(`Loading... ${loaded}/${total}`, INTERNAL_W / 2, y - 6);
+    ctx.font = '8px "Kenney Mini"';
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    const loadText = `Loading... ${loaded}/${total}`;
+    const tw = ctx.measureText(loadText).width;
+    ctx.fillText(loadText, Math.floor((INTERNAL_W - tw) / 2), y - 10);
 }

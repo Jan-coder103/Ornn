@@ -658,8 +658,8 @@ export class Scene {
             return;
         }
 
-        const cx = this.camera.x;
-        const cy = this.camera.y;
+        const cx = Math.round(this.camera.x);
+        const cy = Math.round(this.camera.y);
 
         c.fillStyle = '#1a1a2e';
         c.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
@@ -814,17 +814,19 @@ export class Scene {
         }
 
         c.save();
-        c.font = '5px monospace';
+        c.font = '8px "Kenney Mini"';
         c.textAlign = 'right';
+        c.textBaseline = 'top';
         c.fillStyle = '#ffc107';
-        c.fillText('$' + playerData.coinsBank, INTERNAL_W - 4, 10);
+        c.fillText('$' + playerData.coinsBank, INTERNAL_W - 4, 2);
         c.restore();
 
         c.save();
-        c.font = '4px monospace';
+        c.font = '8px "Kenney Mini"';
         c.textAlign = 'left';
+        c.textBaseline = 'top';
         c.fillStyle = '#aaa';
-        c.fillText('Lv.' + playerData.level, 4, INTERNAL_H - 12);
+        c.fillText('Lv.' + playerData.level, 4, INTERNAL_H - 20);
 
         const xp = getXPProgress();
         const barX = 4;
