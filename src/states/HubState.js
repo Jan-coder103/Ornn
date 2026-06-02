@@ -2,16 +2,60 @@ import { Scene } from '../Scene.js';
 import { INTERNAL_W, INTERNAL_H } from '../RenderConfig.js';
 import { playerData } from '../GameData.js';
 import { calculateStats } from '../Inventory.js';
-import { transitionTo } from '../Transition.js';
+import { transitionTo, isInputBlocked } from '../Transition.js';
 import { STATES } from '../GameStateManager.js';
 import { ShopUI } from '../ShopUI.js';
 import { CrystalForgeUI } from '../CrystalForgeUI.js';
 import { MountShopUI } from '../MountShopUI.js';
 import { TeleportUI } from '../TeleportUI.js';
+import { PauseUI } from '../PauseUI.js';
+import { InventoryUI } from '../InventoryUI.js';
+import * as Input from '../Input.js';
 
 let scene = null;
 let activeUI = null;
+let overlay = null;
 let pendingInteraction = null;
+
+function saveGame() {
+    try {
+        const data = {
+            version: 1,
+            coinsBank: playerData.coinsBank,
+            inventory: playerData.inventory,
+            equipped: playerData.equipped,
+            level: playerData.level,
+            xp: playerData.xp,
+            realmUnlocked: playerData.realmUnlocked,
+            currentRealm: playerData.currentRealm,
+            crystalDust: playerData.crystalDust,
+        };
+        localStorage.setItem('ornn_save', JSON.stringify(data));
+    } catch (e) { /* ignore */ }
+}
+
+function createPauseActions() {
+    return {
+        inventory: () => {
+            overlay = new InventoryUI(() => {
+                overlay = new PauseUI(createPauseActions());
+            });
+        },
+        save: saveGame,
+        quit: () => {
+            overlay = null;
+            transitionTo(STATES.HUB);
+        },
+    };
+}
+
+function openPause() {
+    overlay = new PauseUI(createPauseActions());
+}
+
+function openInventoryDirect() {
+    overlay = new InventoryUI(() => { overlay = null; });
+}
 
 function createUI(type) {
     switch (type) {
@@ -31,6 +75,7 @@ export default {
     enter() {
         playerData.fromDungeon = false;
         activeUI = null;
+        overlay = null;
         pendingInteraction = null;
         calculateStats();
         playerData.health = -1;
@@ -47,6 +92,7 @@ export default {
         if (scene) scene.destroy();
         scene = null;
         activeUI = null;
+        overlay = null;
         pendingInteraction = null;
     },
     update(dt) {
@@ -60,17 +106,36 @@ export default {
             playerData.hubMessageTimer -= dt;
         }
 
+        if (overlay) {
+            overlay.update(dt);
+            if (overlay.isClosed()) overlay = null;
+            return;
+        }
+
         if (activeUI) {
             activeUI.update(dt);
             if (activeUI.isClosed()) {
                 activeUI = null;
             }
-        } else {
-            if (scene) scene.update(dt);
+            return;
+        }
 
-            if (pendingInteraction) {
-                activeUI = createUI(pendingInteraction);
-                pendingInteraction = null;
+        if (scene) scene.update(dt);
+
+        if (pendingInteraction) {
+            activeUI = createUI(pendingInteraction);
+            pendingInteraction = null;
+            return;
+        }
+
+        if (!isInputBlocked()) {
+            if (Input.pausePressed()) {
+                openPause();
+                return;
+            }
+            if (Input.wasKeyPressed('i') || Input.wasKeyPressed('I')) {
+                openInventoryDirect();
+                return;
             }
         }
     },
@@ -79,6 +144,10 @@ export default {
 
         if (activeUI) {
             activeUI.render(c);
+        }
+
+        if (overlay) {
+            overlay.render(c);
         }
 
         if (playerData.deathMessageTimer > 0 && playerData.deathMessage) {
@@ -109,6 +178,7 @@ export default {
     getDebugInfo() {
         const info = scene ? scene.getDebugInfo() : {};
         info.activeUI = activeUI ? activeUI.constructor.name : 'none';
+        info.overlay = overlay ? overlay.constructor.name : 'none';
         return info;
     },
 };

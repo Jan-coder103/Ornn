@@ -1,13 +1,49 @@
 import { Scene } from '../Scene.js';
 import { INTERNAL_W, INTERNAL_H } from '../RenderConfig.js';
-import { transitionTo } from '../Transition.js';
+import { transitionTo, isInputBlocked } from '../Transition.js';
 import { STATES } from '../GameStateManager.js';
 import { playerData } from '../GameData.js';
 import { calculateStats } from '../Inventory.js';
 import { REALM_MULT } from '../CONFIG.js';
+import { PauseUI } from '../PauseUI.js';
+import { InventoryUI } from '../InventoryUI.js';
+import * as Input from '../Input.js';
 
 let scene = null;
 let dungeonEntrances = [];
+let overlay = null;
+
+function saveGame() {
+    try {
+        const data = {
+            version: 1,
+            coinsBank: playerData.coinsBank,
+            inventory: playerData.inventory,
+            equipped: playerData.equipped,
+            level: playerData.level,
+            xp: playerData.xp,
+            realmUnlocked: playerData.realmUnlocked,
+            currentRealm: playerData.currentRealm,
+            crystalDust: playerData.crystalDust,
+        };
+        localStorage.setItem('ornn_save', JSON.stringify(data));
+    } catch (e) { /* ignore */ }
+}
+
+function createPauseActions() {
+    return {
+        inventory: () => {
+            overlay = new InventoryUI(() => {
+                overlay = new PauseUI(createPauseActions());
+            });
+        },
+        save: saveGame,
+        quit: () => {
+            overlay = null;
+            transitionTo(STATES.HUB);
+        },
+    };
+}
 
 function generateEntrances(mapWidth) {
     const realm = playerData.currentRealm || 1;
@@ -43,6 +79,7 @@ function generateEntrances(mapWidth) {
 export default {
     enter() {
         calculateStats();
+        overlay = null;
 
         if (playerData.fromDungeon) {
             playerData.fromDungeon = false;
@@ -86,15 +123,37 @@ export default {
     exit() {
         if (scene) scene.destroy();
         scene = null;
+        overlay = null;
     },
     update(dt) {
         if (playerData.inventoryMessageTimer > 0) {
             playerData.inventoryMessageTimer -= dt;
         }
+
+        if (overlay) {
+            overlay.update(dt);
+            if (overlay.isClosed()) overlay = null;
+            return;
+        }
+
         if (scene) scene.update(dt);
+
+        if (!isInputBlocked()) {
+            if (Input.pausePressed()) {
+                overlay = new PauseUI(createPauseActions());
+                return;
+            }
+            if (Input.wasKeyPressed('i') || Input.wasKeyPressed('I')) {
+                overlay = new InventoryUI(() => { overlay = null; });
+                return;
+            }
+        }
     },
     render(c) {
         if (scene) scene.render(c);
+
+        if (overlay) overlay.render(c);
+
         if (playerData.inventoryMessageTimer > 0 && playerData.inventoryMessage) {
             c.save();
             c.font = '5px monospace';
@@ -108,6 +167,7 @@ export default {
         const info = scene ? scene.getDebugInfo() : {};
         info.dungeonCount = dungeonEntrances.length;
         info.clearedCount = dungeonEntrances.filter(d => d.cleared).length;
+        info.overlay = overlay ? overlay.constructor.name : 'none';
         return info;
     },
 };

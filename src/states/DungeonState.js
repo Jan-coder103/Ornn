@@ -3,9 +3,11 @@ import { INTERNAL_W, INTERNAL_H } from '../RenderConfig.js';
 import { transitionTo, isInputBlocked } from '../Transition.js';
 import { STATES } from '../GameStateManager.js';
 import { playerData } from '../GameData.js';
-import { wasKeyPressed } from '../Input.js';
 import { calculateStats } from '../Inventory.js';
 import { REALM_MULT } from '../CONFIG.js';
+import { PauseUI } from '../PauseUI.js';
+import { InventoryUI } from '../InventoryUI.js';
+import * as Input from '../Input.js';
 
 const DUNGEON_MAPS = {
     1: [
@@ -28,6 +30,39 @@ const DUNGEON_MAPS = {
 let currentRoom = 0;
 let dungeonID = 1;
 let scene = null;
+let overlay = null;
+
+function saveGame() {
+    try {
+        const data = {
+            version: 1,
+            coinsBank: playerData.coinsBank,
+            inventory: playerData.inventory,
+            equipped: playerData.equipped,
+            level: playerData.level,
+            xp: playerData.xp,
+            realmUnlocked: playerData.realmUnlocked,
+            currentRealm: playerData.currentRealm,
+            crystalDust: playerData.crystalDust,
+        };
+        localStorage.setItem('ornn_save', JSON.stringify(data));
+    } catch (e) { /* ignore */ }
+}
+
+function createPauseActions() {
+    return {
+        inventory: () => {
+            overlay = new InventoryUI(() => {
+                overlay = new PauseUI(createPauseActions());
+            });
+        },
+        save: saveGame,
+        quit: () => {
+            overlay = null;
+            transitionTo(STATES.HUB);
+        },
+    };
+}
 
 function getRooms() {
     return DUNGEON_MAPS[dungeonID] || DUNGEON_MAPS[1];
@@ -79,6 +114,7 @@ export default {
     enter() {
         dungeonID = playerData.pendingDungeonID || 1;
         currentRoom = 0;
+        overlay = null;
         loadCurrentRoom();
     },
     exit() {
@@ -87,16 +123,31 @@ export default {
         }
         if (scene) scene.destroy();
         scene = null;
+        overlay = null;
     },
     update(dt) {
-        if (!isInputBlocked() && wasKeyPressed('Escape')) {
-            transitionTo(STATES.HUB);
+        if (overlay) {
+            overlay.update(dt);
+            if (overlay.isClosed()) overlay = null;
             return;
         }
+
+        if (!isInputBlocked()) {
+            if (Input.pausePressed()) {
+                overlay = new PauseUI(createPauseActions());
+                return;
+            }
+            if (Input.wasKeyPressed('i') || Input.wasKeyPressed('I')) {
+                overlay = new InventoryUI(() => { overlay = null; });
+                return;
+            }
+        }
+
         if (scene) scene.update(dt);
     },
     render(c) {
         if (scene) scene.render(c);
+        if (overlay) overlay.render(c);
     },
     getDebugInfo() {
         if (!scene) return { playerX: null, playerY: null, entityCount: 0 };
@@ -104,6 +155,7 @@ export default {
         info.room = currentRoom + 1;
         info.totalRooms = getRooms().length;
         info.dungeonID = dungeonID;
+        info.overlay = overlay ? overlay.constructor.name : 'none';
         return info;
     },
 };

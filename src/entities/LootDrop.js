@@ -78,7 +78,7 @@ export class LootDrop {
         ctx.font = '5px monospace';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#fff';
-        ctx.fillText('E', x, y);
+        ctx.fillText('[E] Pick Up', x, y);
 
         if (def) {
             ctx.font = '4px monospace';

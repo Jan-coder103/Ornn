@@ -49,7 +49,7 @@ export class Door {
         ctx.font = '5px monospace';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#fff';
-        ctx.fillText('E', x, y);
+        ctx.fillText('[E] Open', x, y);
         ctx.restore();
     }
 }

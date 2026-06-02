@@ -48,7 +48,7 @@ export class Portal {
         ctx.font = '5px monospace';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#fff';
-        ctx.fillText('E', x, y);
+        ctx.fillText('[E] Enter', x, y);
         ctx.restore();
     }
 }
