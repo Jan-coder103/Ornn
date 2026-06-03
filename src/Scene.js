@@ -220,6 +220,8 @@ export class Scene {
             this.boss.update(this.player.body);
             if (!this.boss.isDead) {
                 this.physics.update(this.boss.body);
+            } else if (this.boss.isFadeDone) {
+                this.boss = null;
             }
         }
 
@@ -269,6 +271,7 @@ export class Scene {
 
     _handleDeath() {
         Audio.play('death', 0.6);
+        this.player.health = this.player.maxHealth;
         if (this.config.onPlayerDeath) {
             this.config.onPlayerDeath();
             return;

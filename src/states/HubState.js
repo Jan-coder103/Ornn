@@ -94,13 +94,13 @@ export default {
 
         if (overlay) {
             overlay.update(dt);
-            if (overlay.isClosed()) overlay = null;
+            if (!overlay || overlay.isClosed()) overlay = null;
             return;
         }
 
         if (activeUI) {
             activeUI.update(dt);
-            if (activeUI.isClosed()) {
+            if (!activeUI || activeUI.isClosed()) {
                 activeUI = null;
             }
             return;

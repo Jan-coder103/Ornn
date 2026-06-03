@@ -22,8 +22,8 @@ export class Boss {
     constructor(x, y) {
         this.id = nextId++;
         this.body = new Body(x, y, 16, 16);
-        this.hp = 20;
-        this.maxHp = 20;
+        this.hp = 12;
+        this.maxHp = 12;
         this.damage = 2;
         this.facing = -1;
         this.phase = 1;
@@ -36,6 +36,7 @@ export class Boss {
         this._flashTimer = 0;
         this._deathTimer = 0;
         this._deathDone = false;
+        this._fadeTimer = 60;
         this._wasAirborne = false;
         this._projectiles = [];
         this.slamImpact = null;
@@ -65,10 +66,17 @@ export class Boss {
         return false;
     }
 
+    get isFadeDone() { return this._deathDone && this._fadeTimer <= 0; }
+
     update(playerBody) {
         if (this.state === BS.DEAD) {
-            this._deathTimer--;
-            if (this._deathTimer <= 0) this._deathDone = true;
+            if (this._deathTimer > 0) {
+                this._deathTimer--;
+            } else if (!this._deathDone) {
+                this._deathDone = true;
+            } else if (this._fadeTimer > 0) {
+                this._fadeTimer--;
+            }
             return;
         }
 
@@ -201,14 +209,20 @@ export class Boss {
         const h = this.body.h;
 
         if (this.state === BS.DEAD) {
-            if (this._deathTimer % 8 < 4) {
+            if (!this._deathDone) {
+                if (this._deathTimer % 8 < 4) {
+                    ctx.fillStyle = '#fff';
+                } else {
+                    ctx.fillStyle = '#7b1fa2';
+                }
+                const shake = this._deathTimer > 30 ? Math.floor(Math.random() * 3 - 1) : 0;
+                ctx.fillRect(x + shake, y, w, h);
+            } else if (this._fadeTimer > 0) {
+                ctx.globalAlpha = this._fadeTimer / 60;
                 ctx.fillStyle = '#fff';
-            } else {
-                ctx.fillStyle = '#7b1fa2';
+                ctx.fillRect(x, y, w, h);
+                ctx.globalAlpha = 1;
             }
-            const shake = this._deathTimer > 30 ? Math.floor(Math.random() * 3 - 1) : 0;
-            ctx.fillRect(x + shake, y, w, h);
-            this._renderHP(ctx, x, y, w);
             return;
         }
 

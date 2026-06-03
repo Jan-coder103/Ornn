@@ -27,6 +27,7 @@ export class Boomerang {
 
             if (this.travelDistance >= BOOMERANG_RANGE) {
                 this.state = STATE.RETURNING;
+                this.hitList.clear();
             }
         } else {
             const dx = playerX - this.x;

@@ -34,8 +34,18 @@ export class CrystalForgeUI {
             return;
         }
 
-        if (Input.wasKeyPressed('Tab') || Input.wasKeyPressed('q') || Input.wasKeyPressed('Q')) {
+        if (Input.wasKeyPressed('Tab')) {
             this._tab = this._tab === 'scrap' ? 'upgrade' : 'scrap';
+            this._selectedIndex = 0;
+            this._scrollOffset = 0;
+        }
+        if (Input.wasKeyPressed('1') && this._tab !== 'scrap') {
+            this._tab = 'scrap';
+            this._selectedIndex = 0;
+            this._scrollOffset = 0;
+        }
+        if (Input.wasKeyPressed('2') && this._tab !== 'upgrade') {
+            this._tab = 'upgrade';
             this._selectedIndex = 0;
             this._scrollOffset = 0;
         }

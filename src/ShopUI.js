@@ -36,10 +36,24 @@ export class ShopUI {
             return;
         }
 
-        if (Input.wasKeyPressed('Tab') || Input.wasKeyPressed('q') || Input.wasKeyPressed('Q')) {
+        if (Input.wasKeyPressed('Tab')) {
             this._tab = this._tab === 'buy' ? 'sell' : 'buy';
             this._selectedIndex = 0;
             this._scrollOffset = 0;
+        }
+        if (Input.wasKeyPressed('b') || Input.wasKeyPressed('B')) {
+            if (this._tab !== 'buy') {
+                this._tab = 'buy';
+                this._selectedIndex = 0;
+                this._scrollOffset = 0;
+            }
+        }
+        if (Input.wasKeyPressed('s') || Input.wasKeyPressed('S')) {
+            if (this._tab !== 'sell') {
+                this._tab = 'sell';
+                this._selectedIndex = 0;
+                this._scrollOffset = 0;
+            }
         }
 
         const items = this._tab === 'buy' ? this._buyItems : this._getSellItems();
@@ -49,7 +63,7 @@ export class ShopUI {
             this._selectedIndex = Math.max(0, this._selectedIndex - 1);
             this._adjustScroll();
         }
-        if (Input.wasKeyPressed('ArrowDown') || Input.wasKeyPressed('s') || Input.wasKeyPressed('S')) {
+        if (Input.wasKeyPressed('ArrowDown')) {
             this._selectedIndex = Math.min(maxIdx, this._selectedIndex + 1);
             this._adjustScroll();
         }
@@ -125,7 +139,9 @@ export class ShopUI {
         const items = this._tab === 'buy' ? this._buyItems : this._getSellItems();
         this._renderItemList(ctx, items);
 
-        fillText('$' + playerData.coinsBank, INTERNAL_W - 8, INTERNAL_H - 12, '#ffc107');
+        ctx.textAlign = 'right';
+        fillText('$' + playerData.coinsBank, INTERNAL_W - 4, INTERNAL_H - 12, '#ffc107');
+        ctx.textAlign = 'left';
 
         fillTextCenter('TAB: switch  ENTER: select  ESC: close', INTERNAL_H - 12, '#888');
 

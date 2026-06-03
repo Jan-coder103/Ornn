@@ -113,7 +113,7 @@ export default {
     update(dt) {
         if (overlay) {
             overlay.update(dt);
-            if (overlay.isClosed()) overlay = null;
+            if (!overlay || overlay.isClosed()) overlay = null;
             return;
         }
 
