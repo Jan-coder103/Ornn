@@ -8,6 +8,7 @@ import { clearFrame } from './Input.js';
 import * as AudioManager from './AudioManager.js';
 import * as GameJuice from './GameJuice.js';
 import { init as initMobileControls } from './MobileControls.js';
+import * as AssetStore from './AssetStore.js';
 
 import BootState from './states/BootState.js';
 import MenuState from './states/MenuState.js';
@@ -80,6 +81,12 @@ async function boot() {
     } catch (err) {
         console.error('Failed to load assets:', err);
     }
+
+    await AssetStore.loadAll([
+        ['tileset', 'assets/tiles/tilemap.png'],
+        ['tileset_bg', 'assets/tiles/tilemap-backgrounds.png'],
+        ['tileset_chars', 'assets/tiles/tilemap-characters.png'],
+    ]);
 
     try {
         await document.fonts.load('8px "Kenney Mini"');

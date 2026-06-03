@@ -24,7 +24,7 @@ export class TilemapRenderer {
         }
 
         if (tilesetImage) {
-            this.colsInSheet = Math.floor(tilesetImage.width / (this.tileW + this.spacing));
+            this.colsInSheet = Math.floor((tilesetImage.width + this.spacing) / (this.tileW + this.spacing));
         }
     }
 

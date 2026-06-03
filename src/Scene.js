@@ -30,6 +30,7 @@ import {
 } from './CONFIG.js';
 import * as Audio from './AudioManager.js';
 import * as GameJuice from './GameJuice.js';
+import * as AssetStore from './AssetStore.js';
 
 const GROUND_COLORS = {
     1: '#87CEEB',
@@ -73,8 +74,9 @@ export class Scene {
 
     load() {
         this.ready = false;
-        const mapPromise = fetch(this.config.mapPath).then(r => r.json());
-        const itemsPromise = fetch('data/items.json').then(r => r.json());
+        const cacheBust = '?t=' + Date.now();
+        const mapPromise = fetch(this.config.mapPath + cacheBust).then(r => r.json());
+        const itemsPromise = fetch('data/items.json' + cacheBust).then(r => r.json());
 
         Promise.all([mapPromise, itemsPromise])
             .then(([mapData, itemsData]) => {
@@ -105,7 +107,7 @@ export class Scene {
 
     _init(mapData) {
         this.tilemap = new TilemapRenderer();
-        this.tilemap.load(mapData, null);
+        this.tilemap.load(mapData, AssetStore.get('tileset'));
 
         this.physics = new Physics();
         this.physics.setMap(this.tilemap);

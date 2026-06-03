@@ -171,3 +171,6 @@ This project is currently in development.
 ---
 
 **Ornn** — Forge your legend, one boomerang at a time.
+
+
+Notes: -Still uses a weird cash clean up, for my frequent map updates
